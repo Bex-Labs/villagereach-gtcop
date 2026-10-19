@@ -1,5 +1,6 @@
 import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
+import Header from "../components/Header"; // NEW: bring in the header
 
 // Load the Source Sans 3 font (the font VillageReach's website uses)
 const sourceSans = Source_Sans_3({
@@ -18,7 +19,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={sourceSans.className}>{children}</body>
+      <body className={sourceSans.className}>
+        <Header /> {/* NEW: the header appears on every page */}
+        {children}
+      </body>
     </html>
   );
 }

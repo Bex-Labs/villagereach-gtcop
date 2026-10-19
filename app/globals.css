@@ -51,3 +51,89 @@ a:hover {
   margin: 0 auto;
   padding: 0 16px;
 }
+
+/* ===== Keyboard focus (accessibility, UX-06) ===== */
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--rust);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--rust-dark);
+  color: var(--white);
+}
+
+/* ===== Header (brown top bar) ===== */
+.site-header {
+  background: var(--brown);
+  color: var(--white);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  min-height: 68px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  color: var(--white);
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.brand:hover {
+  color: var(--white);
+}
+
+.brand-name {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.brand-sub {
+  font-size: 13px;
+  color: #E8DFD3;
+}
+
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+
+.main-nav a {
+  color: var(--white);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.main-nav a:hover {
+  color: var(--white);
+  border-bottom-color: var(--gold);
+}
