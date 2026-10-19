@@ -137,3 +137,72 @@ button:focus-visible {
   color: var(--white);
   border-bottom-color: var(--gold);
 }
+
+/* ===== Keep the footer at the bottom of short pages ===== */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-main {
+  flex: 1;
+}
+
+/* ===== Footer (slate bar) ===== */
+.site-footer {
+  background: var(--charcoal);
+  color: var(--white);
+  margin-top: 48px;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  padding-top: 32px;
+  padding-bottom: 24px;
+}
+
+.footer-name {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.footer-tagline {
+  margin: 0;
+  font-size: 14px;
+  color: #D5DADD;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.footer-nav a {
+  color: var(--white);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+
+.footer-bottom p {
+  margin: 0;
+  font-size: 13px;
+  color: #D5DADD;
+}
