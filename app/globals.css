@@ -471,3 +471,12 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); o
   .admin-grid { grid-template-columns: 1fr; }
   .admin-main { padding: 20px 16px; }
 }
+
+@media (min-width: 901px) {
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
