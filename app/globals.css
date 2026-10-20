@@ -356,3 +356,8 @@ input[aria-invalid="true"] { border-color: #B42318; }
 
   .nav-wrap .btn { text-align: center; margin-top: 12px; }
 }
+.alert-success {
+  background: #EEF3E2;
+  color: #3D4A1C;
+  border: 1px solid #CBD7A8;
+}
