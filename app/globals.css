@@ -712,3 +712,37 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
 @media (max-width: 600px) {
   .profile-head { grid-template-columns: 1fr; }
 }
+/* ===== Document page + search (C-04, C-05) ===== */
+.doc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.doc-preview { padding: 0; overflow: hidden; }
+.doc-preview iframe { width: 100%; height: 80vh; border: 0; display: block; }
+.no-preview { padding: 48px 24px; text-align: center; }
+
+.doc-details h1 { font-size: 24px; margin: 4px 0 8px; }
+
+.detail-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 20px 0;
+  font-size: 15px;
+}
+.detail-list dt { color: #5C6670; }
+.detail-list dd { margin: 0; font-weight: 600; }
+
+.doc-details .btn-outline { width: 100%; }
+.doc-description { margin-top: 20px; color: #4A5560; }
+
+.search-results { padding: 0 24px; list-style: none; }
+.search-results li:last-child { border-bottom: none; }
+
+@media (max-width: 900px) {
+  .doc-layout { grid-template-columns: 1fr; }
+  .doc-preview iframe { height: 60vh; }
+}
