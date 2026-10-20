@@ -20,11 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={sourceSans.className}>
-      <Header />
-      <div className="site-main">{children}</div>
-      <Footer />
-      </body>
+    <body className={sourceSans.className}>{children}</body>
     </html>
   );
 }
