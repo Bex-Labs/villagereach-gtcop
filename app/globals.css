@@ -307,3 +307,52 @@ input[aria-invalid="true"] { border-color: #B42318; }
   border: 2px solid var(--rust);
 }
 .btn-outline:hover { background: #F6EAE3; }
+
+/* ===== Header layout + mobile menu (UX-05) ===== */
+.nav-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 16px 32px;
+  margin-left: 40px;
+}
+
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle { display: inline-flex; }
+
+  .nav-wrap {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    padding: 8px 0 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .nav-wrap.is-open { display: flex; }
+
+  .main-nav { flex-direction: column; gap: 0; }
+
+  .main-nav a {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .nav-wrap .btn { text-align: center; margin-top: 12px; }
+}
