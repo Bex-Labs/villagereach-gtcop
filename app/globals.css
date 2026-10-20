@@ -581,3 +581,6 @@ select[aria-invalid="true"] { border-color: #B42318; }
 .badge { text-transform: capitalize; }
 .badge-pending { background: #FBEFC9; color: #6B4E00; }
 .badge-error { background: #FDECEA; color: #8A1C12; }
+
+.edit-card { max-width: 760px; margin-top: 24px; }
+input[type="file"] { padding: 10px; background: #FBFAF7; }

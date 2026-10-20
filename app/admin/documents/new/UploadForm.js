@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,6 +25,7 @@ export default function UploadForm({ countries, categories }) {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(null); // { title, status }
+  const intentRef = useRef("draft"); // which button was clicked
 
   function chooseFile(selected) {
     if (!selected) return;
@@ -47,7 +48,7 @@ export default function UploadForm({ countries, categories }) {
     setFormError("");
 
     const form = new FormData(event.currentTarget);
-    const intent = event.nativeEvent.submitter?.value; // "draft" or "publish"
+    const intent = intentRef.current; // "draft" or "publish"
     const status = intent === "publish" ? "published" : "draft";
 
     const values = {
@@ -249,10 +250,12 @@ export default function UploadForm({ countries, categories }) {
       <textarea id="description" name="description" rows={4} />
 
       <div className="form-actions">
-        <button type="submit" name="intent" value="draft" className="btn btn-outline" disabled={saving}>
+        <button type="submit" name="intent" value="draft" className="btn btn-outline" disabled={saving}
+          onClick={() => (intentRef.current = "draft")}>
           Save as draft
         </button>
-        <button type="submit" name="intent" value="publish" className="btn btn-primary" disabled={saving}>
+        <button type="submit" name="intent" value="publish" className="btn btn-primary" disabled={saving}
+          onClick={() => (intentRef.current = "publish")}>
           {saving ? "Uploading…" : "Publish"}
         </button>
         <Link href="/admin" className="cancel-link">Cancel</Link>
@@ -260,3 +263,4 @@ export default function UploadForm({ countries, categories }) {
     </form>
   );
 }
+
