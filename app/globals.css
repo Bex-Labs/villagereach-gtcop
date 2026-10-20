@@ -746,3 +746,38 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
   .doc-layout { grid-template-columns: 1fr; }
   .doc-preview iframe { height: 60vh; }
 }
+
+/* ===== Maturity levels + framework (D-01) ===== */
+.level-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border: 1px solid #E4DED3;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.level-pill::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--dot, #ccc);
+}
+.level-1 { --dot: #E9C46A; }
+.level-2 { --dot: #B5A55A; }
+.level-3 { --dot: #7A7F3E; }
+.level-4 { --dot: #4F5A2A; }
+.level-none { color: #5C6670; font-weight: 400; }
+.level-none::before { background: transparent; border: 1px dashed #9AA3AB; }
+
+.framework-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.framework-item textarea { min-height: 70px; }
