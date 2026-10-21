@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminSidebar from "@/components/AdminSidebar";
 import SignOutButton from "@/components/SignOutButton";
+import InactivityTimer from "@/components/InactivityTimer";
 
 export const metadata = { title: "Admin | GTCOP Assessment" };
 
@@ -33,6 +34,7 @@ export default async function AdminLayout({ children }) {
 
   return (
     <div className="admin-shell">
+      <InactivityTimer /> {/* A-01: sign out after 60 minutes of inactivity */}
       <AdminSidebar name={profile.full_name} />
       <main className="admin-main">{children}</main>
     </div>

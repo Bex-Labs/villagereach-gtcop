@@ -1036,3 +1036,6 @@ body > header {
 .change-list { margin: 8px 0 0; padding-left: 18px; font-size: 14px; word-break: break-word; }
 .table summary { cursor: pointer; color: var(--rust); font-weight: 600; }
 .pager { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+
+/* ===== Sign-in notice (A-01) ===== */
+.alert-info { background: #EEF2F4; color: #2F3E46; border: 1px solid #C9D6DD; }
