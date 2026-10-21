@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import CountryRanking from "@/components/CountryRanking";
 
 // Page title, e.g. "Kenya | GTCOP Assessment" (also used in link previews, C-06)
 export async function generateMetadata({ params }) {
@@ -75,12 +76,8 @@ export default async function CountryProfilePage({ params, searchParams }) {
         <CopyLinkButton />
       </section>
 
-      {/* Maturity: filled in Stage 2 */}
-      <section className="card section-card">
-        <p className="eyebrow">Regulatory assessment</p>
-        <h2>Telehealth maturity</h2>
-        <p className="muted">Assessment in progress. Results for the five thematic areas will appear here once published.</p>
-      </section>
+      {/* Maturity ranking + history (D-03, D-04) */}
+      <CountryRanking countryId={country.id} />
 
       {/* Documents grouped by category */}
       <section className="card section-card">

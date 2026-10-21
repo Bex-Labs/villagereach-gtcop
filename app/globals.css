@@ -965,3 +965,30 @@ body > header {
   .sidebar-menu { display: none; }            /* hidden until ☰ is tapped */
   .sidebar-menu.is-open { display: flex; }
 }
+
+/* ===== Country ranking + history (D-04) ===== */
+.maturity-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.maturity-head h2 { margin-bottom: 4px; }
+.overall { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.area-scores { list-style: none; padding: 0; margin: 16px 0; }
+.area-scores li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.area-name { flex: 1 1 200px; font-weight: 600; }
+.area-note { flex-basis: 100%; }
+
+.change { font-size: 14px; font-weight: 600; }
+.change-up { color: var(--level-4); }
+.change-down { color: var(--rust-dark); }
