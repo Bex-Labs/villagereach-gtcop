@@ -1008,3 +1008,7 @@ body > header {
 
 .quick-actions { display: grid; gap: 10px; }
 .quick-actions .btn { text-align: center; }
+
+/* ===== Home: maturity summary ===== */
+.level-summary .stat { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.level-summary .stat-number { margin-top: 4px; }

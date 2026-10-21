@@ -14,6 +14,7 @@ const items = [
   { href: "/admin/rankings", label: "Rankings" },
   { href: "/admin/study-materials", label: "Study materials" },
   { href: "/admin/review", label: "Pending review" },
+  { href: "/admin/content", label: "Site content" },
   { href: "/admin/users", label: "Users" },
 ];
 

@@ -1,24 +1,36 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getContent } from "@/lib/content";
+import { SECTIONS } from "@/lib/study";
+import LevelPill from "@/components/LevelPill";
 
 export default async function Home() {
   const supabase = await createClient();
 
-  // Visible countries + published documents (C-01)
-  const [{ data: countries }, { data: docs }] = await Promise.all([
-    supabase
-      .from("countries")
-      .select("id, name, iso_code, region")
-      .eq("is_visible", true)
-      .order("name"),
-    supabase
-      .from("documents")
-      .select("country_id, updated_at")
-      .eq("status", "published"),
-  ]);
+  // Visible countries, published documents, rankings and editable text
+  const [{ data: countries }, { data: docs }, { data: levels }, { data: assessments }, { content }] =
+    await Promise.all([
+      supabase
+        .from("countries")
+        .select("id, name, iso_code, region")
+        .eq("is_visible", true)
+        .order("name"),
+      supabase
+        .from("documents")
+        .select("country_id, updated_at")
+        .eq("status", "published"),
+      supabase.from("maturity_levels").select("level, name").order("level"),
+      supabase
+        .from("assessments")
+        .select("country_id, overall_level")
+        .eq("status", "published")
+        .order("round_label", { ascending: false }),
+      getContent(supabase), // G-03: wording set in admin → Site content
+    ]);
 
   const countryList = countries ?? [];
   const docList = docs ?? [];
+  const visibleIds = new Set(countryList.map((c) => c.id));
 
   // Count published documents per country
   const counts = {};
@@ -35,17 +47,26 @@ export default async function Home() {
       })
     : "—";
 
+  // Latest published overall level for each visible country
+  const latestLevel = new Map();
+  (assessments ?? []).forEach((a) => {
+    if (visibleIds.has(a.country_id) && !latestLevel.has(a.country_id)) {
+      latestLevel.set(a.country_id, a.overall_level);
+    }
+  });
+  const perLevel = (levels ?? []).map((l) => ({
+    ...l,
+    count: [...latestLevel.values()].filter((v) => v === l.level).length,
+  }));
+
   return (
     <main>
-      {/* Hero */}
+      {/* Hero (text editable in admin → Site content) */}
       <section className="hero">
         <div className="container">
-          <p className="eyebrow">GTCOP regulatory assessment</p>
-          <h1>Telehealth regulation across Africa, in one place</h1>
-          <p className="hero-text">
-            Explore the policies, guidelines and laws each country has in place, and see how
-            countries compare on telehealth maturity.
-          </p>
+          <p className="eyebrow">{content.home_eyebrow}</p>
+          <h1>{content.home_title}</h1>
+          <p className="hero-text">{content.home_intro}</p>
 
           <form action="/search" className="hero-search" role="search">
             <label htmlFor="q" className="visually-hidden">Search documents or countries</label>
@@ -80,16 +101,34 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Maturity: filled in once rankings are published (Stage 2) */}
+      {/* Maturity across Africa (from published rankings) */}
       <section className="container section">
         <p className="eyebrow">Continental analysis</p>
         <h2>Maturity across Africa</h2>
-        <div className="card notice">
-          <p><strong>Assessment in progress.</strong></p>
-          <p className="muted">
-            Maturity rankings will appear here once the GTCOP assessment results are published.
-          </p>
-        </div>
+
+        {latestLevel.size === 0 ? (
+          <div className="card notice">
+            <p><strong>Assessment in progress.</strong></p>
+            <p className="muted">
+              Maturity rankings will appear here once the GTCOP assessment results are published.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="stats level-summary">
+              {perLevel.map((l) => (
+                <div key={l.level} className="card stat">
+                  <LevelPill level={l.level} name={l.name} />
+                  <p className="stat-number">{l.count}</p>
+                  <p className="stat-label">{l.count === 1 ? "country" : "countries"}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{ marginTop: 20 }}>
+              <Link href="/rankings">See the full rankings →</Link>
+            </p>
+          </>
+        )}
       </section>
 
       {/* Countries */}
@@ -121,19 +160,15 @@ export default async function Home() {
         </p>
       </section>
 
-      {/* Study materials */}
+      {/* Study materials (same sections and wording as the Study materials page) */}
       <section className="container section">
         <p className="eyebrow">Toolkits &amp; guidance</p>
         <h2>Study materials</h2>
         <div className="study-grid">
-          {[
-            { title: "Assessment matrix", text: "The framework used to assess each country." },
-            { title: "Metrics tool", text: "How countries are scored on telehealth maturity." },
-            { title: "Policy recommendations", text: "Guidance for strengthening telehealth regulation." },
-          ].map((s) => (
-            <Link key={s.title} href="/study-materials" className="card study-card">
-              <span className="study-title">{s.title}</span>
-              <span className="muted small">{s.text}</span>
+          {SECTIONS.map((s) => (
+            <Link key={s.key} href={`/study-materials#${s.key}`} className="card study-card">
+              <span className="study-title">{s.label}</span>
+              <span className="muted small">{s.description}</span>
               <span className="study-link">Learn more →</span>
             </Link>
           ))}

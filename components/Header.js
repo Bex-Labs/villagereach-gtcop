@@ -9,6 +9,7 @@ const links = [
   { href: "/countries", label: "Countries" },
   { href: "/rankings", label: "Rankings" },
   { href: "/study-materials", label: "Study materials" },
+  { href: "/about", label: "About" },
 ];
 
 export default function Header({ signedIn }) {

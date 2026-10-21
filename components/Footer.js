@@ -11,6 +11,7 @@ export default function Footer() {
           <Link href="/countries">Countries</Link>
           <Link href="/rankings">Rankings</Link>
           <Link href="/study-materials">Study materials</Link>
+          <Link href="/about">About</Link>
         </nav>
         <p>© {year} VillageReach</p>
       </div>
