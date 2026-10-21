@@ -87,6 +87,12 @@ export default async function ContributorDashboard() {
                         {d.status === "rejected" && d.rejection_reason && (
                           <p className="field-error">Reason: {d.rejection_reason}</p>
                         )}
+                        {/* F-04: contributor can fix it and send it back */}
+                        {d.status === "rejected" && (
+                          <p className="small">
+                            <Link href={`/contributor/submissions/${d.id}`}>Fix and resubmit →</Link>
+                          </p>
+                        )}
                       </td>
                       <td>{d.categories?.name}</td>
                       <td>{d.year}</td>
@@ -120,7 +126,9 @@ export default async function ContributorDashboard() {
           </ul>
         )}
         {country?.is_visible && (
-          <p className="small"><Link href={`/countries/${country.iso_code.toLowerCase()}`}>View {country.name}&apos;s public page →</Link></p>
+          <p className="small">
+            <Link href={`/countries/${country.iso_code.toLowerCase()}`}>View {country.name}&apos;s public page →</Link>
+          </p>
         )}
       </section>
     </>
