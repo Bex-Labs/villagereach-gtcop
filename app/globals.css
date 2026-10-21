@@ -999,3 +999,12 @@ body > header {
 .study-article h1 { margin: 4px 0 12px; }
 .study-lead { font-size: 18px; color: #4A5560; }
 .study-body { white-space: pre-line; margin: 16px 0; }   /* keeps the line breaks typed in admin */
+/* ===== Admin dashboard (G-01) ===== */
+.stat-link { text-decoration: none; color: var(--text); }
+.stat-link:hover { border-color: var(--rust); color: var(--text); }
+
+.admin-grid h2 { margin-top: 0; font-size: 20px; }
+.dash-side { display: grid; gap: 24px; }
+
+.quick-actions { display: grid; gap: 10px; }
+.quick-actions .btn { text-align: center; }
