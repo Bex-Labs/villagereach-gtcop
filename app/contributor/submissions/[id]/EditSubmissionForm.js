@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notifyNewSubmission } from "../../actions"; // F-05
 
 const ALLOWED = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"];
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
@@ -71,7 +72,7 @@ export default function EditSubmissionForm({ doc, categories }) {
       setSaving(false);
       return setError("Could not resubmit. Please try again.");
     }
-
+    await notifyNewSubmission(doc.id); // F-05: email the admins
     router.push("/contributor");
     router.refresh();
   }

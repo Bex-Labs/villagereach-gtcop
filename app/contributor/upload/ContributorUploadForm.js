@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notifyNewSubmission } from "../actions"; // F-05
 
 const ALLOWED = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"];
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
@@ -47,26 +48,32 @@ export default function ContributorUploadForm({ countryId, countryName, isoCode,
     }
 
     // 2. Save the details as "pending": hidden until VillageReach approves it
-    const { error: saveError } = await supabase.from("documents").insert({
-      title,
-      country_id: countryId,
-      category_id: Number(categoryId),
-      year,
-      issuing_body: form.get("issuing_body").trim() || null,
-      language: form.get("language").trim() || "English",
-      description: form.get("description").trim() || null,
-      file_path: path,
-      file_type: ext.toUpperCase(),
-      file_size: file.size,
-      status: "pending",
-      uploaded_by: user.id,
-    });
+    const { data: saved, error: saveError } = await supabase
+      .from("documents")
+      .insert({
+        title,
+        country_id: countryId,
+        category_id: Number(categoryId),
+        year,
+        issuing_body: form.get("issuing_body").trim() || null,
+        language: form.get("language").trim() || "English",
+        description: form.get("description").trim() || null,
+        file_path: path,
+        file_type: ext.toUpperCase(),
+        file_size: file.size,
+        status: "pending",
+        uploaded_by: user.id,
+      })
+      .select("id") // F-05: we need the new document's id
+      .single();
 
     if (saveError) {
       await supabase.storage.from("documents").remove([path]); // don't leave the file behind
       setSaving(false);
       return setError("Could not submit. Please try again.");
     }
+
+    await notifyNewSubmission(saved.id); // F-05: email the admins
 
     setSaving(false);
     setDone(true);
