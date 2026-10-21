@@ -62,7 +62,7 @@ export default async function AdminDashboard() {
       <h1>Dashboard</h1>
       <p className="muted">
         {allCountries.length} {allCountries.length === 1 ? "country" : "countries"} in the assessment
-        ({visibleCount} visible to the public) · {studyCount ?? 0} study materials published
+        ({visibleCount} visible to the public) · {studyCount ?? 0} {studyCount === 1 ? "study material" : "study materials"} published
       </p>
 
       {/* Key numbers: each card opens the matching list */}
