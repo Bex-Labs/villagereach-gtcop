@@ -5,7 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 
-const items = [
+const ADMIN_ITEMS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/documents", label: "Documents" },
   { href: "/admin/documents/new", label: "Upload document" },
@@ -18,23 +18,24 @@ const items = [
   { href: "/admin/users", label: "Users" },
 ];
 
-export default function AdminSidebar({ name }) {
+export default function AdminSidebar({ name, role = "Admin", title = "GTCOP Admin", items = ADMIN_ITEMS }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false); // phone menu open?
   const close = () => setOpen(false);
+  const home = items[0].href;
 
   // Highlight the closest match (so "Upload document" doesn't also light up "Documents")
   const activeHref = items
     .map((i) => i.href)
-    .filter((h) => (h === "/admin" ? pathname === "/admin" : pathname === h || pathname.startsWith(h + "/")))
+    .filter((h) => (h === home ? pathname === home : pathname === h || pathname.startsWith(h + "/")))
     .sort((a, b) => b.length - a.length)[0];
 
   return (
     <aside className="admin-sidebar">
       <div className="sidebar-top">
         <div className="sidebar-top-row">
-          <Link href="/admin" className="sidebar-brand" onClick={close}>
-            GTCOP Admin
+          <Link href={home} className="sidebar-brand" onClick={close}>
+            {title}
             <span>VillageReach</span>
           </Link>
 
@@ -53,7 +54,7 @@ export default function AdminSidebar({ name }) {
       </div>
 
       <div id="admin-menu" className={`sidebar-menu ${open ? "is-open" : ""}`}>
-        <nav aria-label="Admin menu">
+        <nav aria-label="Menu">
           <ul>
             {items.map((item) => {
               const active = item.href === activeHref;
@@ -75,7 +76,7 @@ export default function AdminSidebar({ name }) {
 
         <div className="sidebar-user">
           <p className="sidebar-name">{name}</p>
-          <p className="sidebar-role">Admin</p>
+          <p className="sidebar-role">{role}</p>
           <SignOutButton />
         </div>
       </div>
