@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import CountryRanking from "@/components/CountryRanking";
+import CountryRecommendations from "@/components/CountryRecommendations";
 
 // Page title, e.g. "Kenya | GTCOP Assessment" (also used in link previews, C-06)
 export async function generateMetadata({ params }) {
@@ -78,6 +79,9 @@ export default async function CountryProfilePage({ params, searchParams }) {
 
       {/* Maturity ranking + history (D-03, D-04) */}
       <CountryRanking countryId={country.id} />
+
+      {/* Country-specific recommendations (E-03) */}
+      <CountryRecommendations countryId={country.id} />
 
       {/* Documents grouped by category */}
       <section className="card section-card">

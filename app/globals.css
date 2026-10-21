@@ -992,3 +992,10 @@ body > header {
 .change { font-size: 14px; font-weight: 600; }
 .change-up { color: var(--level-4); }
 .change-down { color: var(--rust-dark); }
+
+/* ===== Study materials (E-01, E-03) ===== */
+.section-card[id] { scroll-margin-top: 100px; }   /* jump links aren't hidden by the sticky header */
+.study-article { max-width: 820px; }
+.study-article h1 { margin: 4px 0 12px; }
+.study-lead { font-size: 18px; color: #4A5560; }
+.study-body { white-space: pre-line; margin: 16px 0; }   /* keeps the line breaks typed in admin */
