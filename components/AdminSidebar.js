@@ -16,6 +16,7 @@ const ADMIN_ITEMS = [
   { href: "/admin/review", label: "Pending review" },
   { href: "/admin/content", label: "Site content" },
   { href: "/admin/users", label: "Users" },
+{ href: "/admin/activity", label: "Activity log" },
 ];
 
 export default function AdminSidebar({ name, role = "Admin", title = "GTCOP Admin", items = ADMIN_ITEMS }) {

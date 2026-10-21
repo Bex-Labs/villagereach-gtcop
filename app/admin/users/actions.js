@@ -8,19 +8,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const PAGE = "/admin/users";
 const goTo = (path, type, message) => redirect(`${path}?${type}=${encodeURIComponent(message)}`);
 
-// These actions have full access, so ALWAYS check the person asking is an active admin
+// These actions can do a lot, so ALWAYS check the person asking is an active admin.
+// Returns the signed-in admin and their Supabase client (so the activity log knows who did it).
 async function requireAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
   const { data: me } = await supabase.from("profiles").select("role, is_active").eq("id", user.id).single();
   if (me?.role !== "admin" || !me.is_active) goTo(PAGE, "error", "Only admins can manage users.");
-  return user;
+  return { user, supabase };
 }
 
 // Invite a new admin or country contributor
 export async function inviteUser(formData) {
-  await requireAdmin();
+  const { supabase } = await requireAdmin();
 
   const fullName = formData.get("full_name")?.trim();
   const email = formData.get("email")?.trim().toLowerCase();
@@ -31,6 +32,7 @@ export async function inviteUser(formData) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email address." };
   if (role === "contributor" && !countryId) return { error: "Contributors must be linked to one country." };
 
+  // Sending the invitation needs the secret key
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { data: { full_name: fullName } });
   if (error) {
@@ -38,7 +40,8 @@ export async function inviteUser(formData) {
     return { error: taken ? "Someone with this email already has an account." : "The invitation could not be sent. Please try again later." };
   }
 
-  const { error: profileError } = await admin.from("profiles").upsert({
+  // Saving the profile is done as the signed-in admin (recorded in the activity log)
+  const { error: profileError } = await supabase.from("profiles").upsert({
     id: data.user.id,
     full_name: fullName,
     role,
@@ -53,7 +56,7 @@ export async function inviteUser(formData) {
 
 // Change a user's name, role or country
 export async function updateUser(formData) {
-  const me = await requireAdmin();
+  const { user: me, supabase } = await requireAdmin();
   const id = formData.get("id");
   const editPage = `${PAGE}/${id}`;
 
@@ -65,8 +68,7 @@ export async function updateUser(formData) {
   if (id === me.id && role !== "admin") goTo(editPage, "error", "You can't remove your own admin role.");
   if (role === "contributor" && !countryId) goTo(editPage, "error", "Contributors must be linked to one country.");
 
-  const admin = createAdminClient();
-  const { error } = await admin
+  const { error } = await supabase
     .from("profiles")
     .update({ full_name: fullName, role, country_id: role === "contributor" ? countryId : null })
     .eq("id", id);
@@ -78,18 +80,19 @@ export async function updateUser(formData) {
 
 // Deactivate (block sign-in) or reactivate an account
 export async function setActive(formData) {
-  const me = await requireAdmin();
+  const { user: me, supabase } = await requireAdmin();
   const id = formData.get("id");
   const active = formData.get("active") === "true";
 
   if (id === me.id) goTo(PAGE, "error", "You can't deactivate your own account.");
 
+  // Blocking sign-in needs the secret key ("ban" for ~100 years = until reactivated)
   const admin = createAdminClient();
-  // A "ban" in Supabase stops them signing in (about 100 years = until reactivated)
   const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: active ? "none" : "876000h" });
   if (error) goTo(PAGE, "error", "Could not update the account. Please try again.");
 
-  await admin.from("profiles").update({ is_active: active }).eq("id", id);
+  // Recorded in the activity log as this admin
+  await supabase.from("profiles").update({ is_active: active }).eq("id", id);
 
   revalidatePath(PAGE);
   goTo(PAGE, "saved", active ? "Account reactivated." : "Account deactivated. They can no longer sign in.");
