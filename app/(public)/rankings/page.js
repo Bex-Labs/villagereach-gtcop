@@ -85,10 +85,10 @@ export default async function RankingsPage({ searchParams }) {
             <thead>
               <tr>
                 <SortHeader label="Country" column="country" sort={sort} dir={dir} />
+                <SortHeader label="Overall" column="overall" sort={sort} dir={dir} />
                 {(areas ?? []).map((a) => (
                   <SortHeader key={a.id} label={a.name} column={a.id} sort={sort} dir={dir} />
                 ))}
-                <SortHeader label="Overall" column="overall" sort={sort} dir={dir} />
               </tr>
             </thead>
             <tbody>
@@ -98,12 +98,12 @@ export default async function RankingsPage({ searchParams }) {
                     <Link href={`/countries/${r.code}`}>{r.name}</Link>
                     <span className="muted small round-label">{r.round}</span>
                   </th>
+                  <td><LevelPill level={r.overall} name={levelName[r.overall]} /></td>
                   {(areas ?? []).map((a) => (
                     <td key={a.id}>
                       <LevelPill level={r.scores[a.id]} name={levelName[r.scores[a.id]]} />
                     </td>
                   ))}
-                  <td><LevelPill level={r.overall} name={levelName[r.overall]} /></td>
                 </tr>
               ))}
             </tbody>

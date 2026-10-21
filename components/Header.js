@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import SignOutButton from "@/components/SignOutButton";
 
 const links = [
   { href: "/", label: "Home" },
@@ -10,7 +11,7 @@ const links = [
   { href: "/study-materials", label: "Study materials" },
 ];
 
-export default function Header() {
+export default function Header({ signedIn }) {
   const [open, setOpen] = useState(false); // is the mobile menu open?
   const close = () => setOpen(false);
 
@@ -40,9 +41,20 @@ export default function Header() {
               </Link>
             ))}
           </nav>
-          <Link href="/sign-in" className="btn btn-primary" onClick={close}>
-            Sign in
-          </Link>
+
+          {/* Signed in: Dashboard + Sign out. Visitors: Sign in */}
+          {signedIn ? (
+            <div className="header-actions">
+              <Link href="/admin" className="btn btn-primary" onClick={close}>
+                Dashboard
+              </Link>
+              <SignOutButton />
+            </div>
+          ) : (
+            <Link href="/sign-in" className="btn btn-primary" onClick={close}>
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
     </header>

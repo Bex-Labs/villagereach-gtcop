@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
-import SignOutButton from "./SignOutButton";
+import SignOutButton from "@/components/SignOutButton";
 
 const items = [
   { href: "/admin", label: "Dashboard" },
@@ -17,38 +18,65 @@ const items = [
 ];
 
 export default function AdminSidebar({ name }) {
-  const pathname = usePathname(); // which page are we on?
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false); // phone menu open?
+  const close = () => setOpen(false);
+
+  // Highlight the closest match (so "Upload document" doesn't also light up "Documents")
+  const activeHref = items
+    .map((i) => i.href)
+    .filter((h) => (h === "/admin" ? pathname === "/admin" : pathname === h || pathname.startsWith(h + "/")))
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <aside className="admin-sidebar">
-      <Link href="/admin" className="admin-brand">
-        GTCOP Admin
-      </Link>
+      <div className="sidebar-top">
+        <div className="sidebar-top-row">
+          <Link href="/admin" className="sidebar-brand" onClick={close}>
+            GTCOP Admin
+            <span>VillageReach</span>
+          </Link>
 
-      <nav aria-label="Admin navigation">
-        {items.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={active ? "active" : ""}
-              aria-current={active ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+          {/* Only shows on phones and tablets */}
+          <button
+            className="menu-toggle sidebar-toggle"
+            aria-expanded={open}
+            aria-controls="admin-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen(!open)}
+          >
+            <span aria-hidden="true">{open ? "✕" : "☰"}</span>
+          </button>
+        </div>
+        <Link href="/" className="sidebar-public">View public site</Link>
+      </div>
 
-      <div className="admin-user">
-        <p>
-          {name}
-          <br />
-          <span>Admin</span>
-        </p>
-        <Link href="/">View public site</Link>
-        <SignOutButton />
+      <div id="admin-menu" className={`sidebar-menu ${open ? "is-open" : ""}`}>
+        <nav aria-label="Admin menu">
+          <ul>
+            {items.map((item) => {
+              const active = item.href === activeHref;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={active ? "is-active" : undefined}
+                    aria-current={active ? "page" : undefined}
+                    onClick={close}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="sidebar-user">
+          <p className="sidebar-name">{name}</p>
+          <p className="sidebar-role">Admin</p>
+          <SignOutButton />
+        </div>
       </div>
     </aside>
   );
