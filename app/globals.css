@@ -1039,3 +1039,12 @@ body > header {
 
 /* ===== Sign-in notice (A-01) ===== */
 .alert-info { background: #EEF2F4; color: #2F3E46; border: 1px solid #C9D6DD; }
+/* ===== Current page in the main menu ===== */
+.main-nav a.is-active { border-bottom-color: var(--gold); }
+
+@media (max-width: 768px) {
+  .main-nav a.is-active {
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+  }
+}

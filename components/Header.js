@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 
 const links = [
@@ -15,6 +16,10 @@ const links = [
 export default function Header({ signedIn }) {
   const [open, setOpen] = useState(false); // is the mobile menu open?
   const close = () => setOpen(false);
+  const pathname = usePathname();
+
+  // Home only when exactly "/", the others also on their sub-pages (e.g. /countries/ng)
+  const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
     <header className="site-header">
@@ -37,7 +42,13 @@ export default function Header({ signedIn }) {
         <div id="main-menu" className={`nav-wrap ${open ? "is-open" : ""}`}>
           <nav className="main-nav" aria-label="Main navigation">
             {links.map((link) => (
-              <Link key={link.href} href={link.href} onClick={close}>
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={close}
+                className={isActive(link.href) ? "is-active" : undefined}
+                aria-current={isActive(link.href) ? "page" : undefined}
+              >
                 {link.label}
               </Link>
             ))}
