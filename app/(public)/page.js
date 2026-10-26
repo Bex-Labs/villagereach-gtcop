@@ -3,6 +3,25 @@ import { createClient } from "@/lib/supabase/server";
 import { getContent } from "@/lib/content";
 import { SECTIONS } from "@/lib/study";
 import LevelPill from "@/components/LevelPill";
+import IconDisc from "@/components/IconDisc";
+
+// Brand headline style: light text with the key words in bold.
+// Bold = everything after the last comma (or the last two words if there is no comma).
+// The words themselves are never changed.
+function splitHeadline(text) {
+  const i = text.lastIndexOf(",");
+  if (i > 0 && i < text.length - 1) return [text.slice(0, i + 1) + " ", text.slice(i + 1).trim()];
+  const words = text.trim().split(/\s+/);
+  if (words.length < 3) return ["", text];
+  return [words.slice(0, -2).join(" ") + " ", words.slice(-2).join(" ")];
+}
+
+// Study material icons and colours, in the same order as SECTIONS
+const STUDY_ICONS = {
+  matrix: { name: "grid", color: "rust" },
+  metrics: { name: "chart", color: "olive" },
+  recommendations: { name: "clipboard", color: "blue" },
+};
 
 export default async function Home() {
   const supabase = await createClient();
@@ -38,15 +57,6 @@ export default async function Home() {
     counts[d.country_id] = (counts[d.country_id] || 0) + 1;
   });
 
-  // Most recent update
-  const lastUpdated = docList.length
-    ? new Date(Math.max(...docList.map((d) => new Date(d.updated_at)))).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : "—";
-
   // Latest published overall level for each visible country
   const latestLevel = new Map();
   (assessments ?? []).forEach((a) => {
@@ -59,13 +69,18 @@ export default async function Home() {
     count: [...latestLevel.values()].filter((v) => v === l.level).length,
   }));
 
+  const [titleLead, titleKey] = splitHeadline(content.home_title);
+
   return (
     <main>
       {/* Hero (text editable in admin → Site content) */}
-      <section className="hero">
+      <section className="hero band-alt">
         <div className="container">
           <p className="eyebrow">{content.home_eyebrow}</p>
-          <h1>{content.home_title}</h1>
+          <h1 className="display">
+            {titleLead}
+            <strong>{titleKey}</strong>
+          </h1>
           <p className="hero-text">{content.home_intro}</p>
 
           <form action="/search" className="hero-search" role="search">
@@ -81,97 +96,84 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="container stats">
-        <div className="card stat">
-          <p className="stat-number">{countryList.length}</p>
-          <p className="stat-label">Countries</p>
-        </div>
-        <div className="card stat">
-          <p className="stat-number">{docList.length}</p>
-          <p className="stat-label">Published documents</p>
-        </div>
-        <div className="card stat">
-          <p className="stat-number">5</p>
-          <p className="stat-label">Thematic areas</p>
-        </div>
-        <div className="card stat">
-          <p className="stat-number stat-date">{lastUpdated}</p>
-          <p className="stat-label">Last updated</p>
-        </div>
-      </section>
-
       {/* Maturity across Africa (from published rankings) */}
-      <section className="container section">
-        <p className="eyebrow">Continental analysis</p>
-        <h2>Maturity across Africa</h2>
+      <section className="band">
+        <div className="container">
+          <p className="eyebrow">Continental analysis</p>
+          <h2 className="display"><strong>Maturity</strong> across Africa</h2>
 
-        {latestLevel.size === 0 ? (
-          <div className="card notice">
-            <p><strong>Assessment in progress.</strong></p>
-            <p className="muted">
-              Maturity rankings will appear here once the GTCOP assessment results are published.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="stats level-summary">
-              {perLevel.map((l) => (
-                <div key={l.level} className="card stat">
-                  <LevelPill level={l.level} name={l.name} />
-                  <p className="stat-number">{l.count}</p>
-                  <p className="stat-label">{l.count === 1 ? "country" : "countries"}</p>
-                </div>
-              ))}
+          {latestLevel.size === 0 ? (
+            <div className="card notice">
+              <p><strong>Assessment in progress.</strong></p>
+              <p className="muted">
+                Maturity rankings will appear here once the GTCOP assessment results are published.
+              </p>
             </div>
-            <p style={{ marginTop: 20 }}>
-              <Link href="/rankings">See the full rankings →</Link>
-            </p>
-          </>
-        )}
+          ) : (
+            <>
+              <div className="stats level-summary">
+                {perLevel.map((l) => (
+                  <div key={l.level} className="card stat">
+                    <LevelPill level={l.level} name={l.name} />
+                    <p className="stat-number">{l.count}</p>
+                    <p className="stat-label">{l.count === 1 ? "country" : "countries"}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="band-link">
+                <Link href="/rankings" className="arrow-link">See the full rankings →</Link>
+              </p>
+            </>
+          )}
+        </div>
       </section>
 
       {/* Countries */}
-      <section className="container section">
-        <p className="eyebrow">Country repositories</p>
-        <h2>Countries</h2>
+      <section className="band band-alt">
+        <div className="container">
+          <p className="eyebrow">Country repositories</p>
+          <h2 className="display"><strong>Countries</strong></h2>
 
-        {countryList.length === 0 ? (
-          <p className="muted">Countries will appear here soon.</p>
-        ) : (
-          <div className="country-grid">
-            {countryList.map((c) => (
-              <Link key={c.id} href={`/countries/${c.iso_code.toLowerCase()}`} className="card country-card">
-                <span className="iso-badge" aria-hidden="true">{c.iso_code}</span>
-                <span>
-                  <span className="country-name">{c.name}</span>
-                  <span className="muted small">{c.region}</span>
-                </span>
-                <span className="country-count">
-                  {counts[c.id] || 0} {counts[c.id] === 1 ? "document" : "documents"}
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
+          {countryList.length === 0 ? (
+            <p className="muted">Countries will appear here soon.</p>
+          ) : (
+            <div className="country-grid">
+              {countryList.map((c) => (
+                <Link key={c.id} href={`/countries/${c.iso_code.toLowerCase()}`} className="card country-card">
+                  <span className="iso-badge" aria-hidden="true">{c.iso_code}</span>
+                  <span>
+                    <span className="country-name">{c.name}</span>
+                    <span className="muted small">{c.region}</span>
+                  </span>
+                  <span className="country-count">
+                    {counts[c.id] || 0} {counts[c.id] === 1 ? "document" : "documents"}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
 
-        <p style={{ marginTop: 20 }}>
-          <Link href="/countries">View all countries →</Link>
-        </p>
+          <p className="band-link">
+            <Link href="/countries" className="arrow-link">View all countries →</Link>
+          </p>
+        </div>
       </section>
 
       {/* Study materials (same sections and wording as the Study materials page) */}
-      <section className="container section">
-        <p className="eyebrow">Toolkits &amp; guidance</p>
-        <h2>Study materials</h2>
-        <div className="study-grid">
-          {SECTIONS.map((s) => (
-            <Link key={s.key} href={`/study-materials#${s.key}`} className="card study-card">
-              <span className="study-title">{s.label}</span>
-              <span className="muted small">{s.description}</span>
-              <span className="study-link">Learn more →</span>
-            </Link>
-          ))}
+      <section className="band">
+        <div className="container">
+          <p className="eyebrow">Toolkits &amp; guidance</p>
+          <h2 className="display"><strong>Study</strong> materials</h2>
+          <div className="study-grid">
+            {SECTIONS.map((s) => (
+              <Link key={s.key} href={`/study-materials#${s.key}`} className="card study-card">
+                <IconDisc name={STUDY_ICONS[s.key]?.name ?? "document"} color={STUDY_ICONS[s.key]?.color ?? "rust"} />
+                <span className="study-title">{s.label}</span>
+                <span className="muted small">{s.description}</span>
+                <span className="study-link">Learn more →</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>

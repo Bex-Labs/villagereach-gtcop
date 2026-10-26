@@ -19,8 +19,16 @@ export default async function SearchPage({ searchParams }) {
     .eq("status", "published")
     .eq("countries.is_visible", true);
 
-  const term = q.replace(/[%,()]/g, " ").trim(); // remove characters that would break the search
-  if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
+  const term = q.replace(/[%,()"\\]/g, " ").trim(); // remove characters that would break the search
+  if (term) {
+    // Match the title, the description, or the country name (the Home search says "documents or countries")
+    const countryIds = (countries ?? [])
+      .filter((c) => c.name.toLowerCase().includes(term.toLowerCase()))
+      .map((c) => c.id);
+    const parts = [`title.ilike.%${term}%`, `description.ilike.%${term}%`];
+    if (countryIds.length) parts.push(`country_id.in.(${countryIds.join(",")})`);
+    query = query.or(parts.join(","));
+  }
   if (country) query = query.eq("country_id", country);
   if (category) query = query.eq("category_id", category);
   if (year) query = query.eq("year", year);
@@ -41,7 +49,7 @@ export default async function SearchPage({ searchParams }) {
   return (
     <main className="container page">
       <p className="breadcrumbs"><Link href="/">Home</Link> / Search</p>
-      <h1>Search documents</h1>
+      <h1 className="display"><strong>Search</strong> documents</h1>
 
       {/* A normal GET form: the filters go into the address, so the results can be shared (C-05) */}
       <form className="filter-bar" role="search">

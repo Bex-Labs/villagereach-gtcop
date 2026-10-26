@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
@@ -25,8 +26,19 @@ export default function Header({ signedIn }) {
     <header className="site-header">
       <div className="container header-inner">
         <Link href="/" className="brand" onClick={close}>
-          <span className="brand-name">GTCOP Assessment</span>
-          <span className="brand-sub">A VillageReach platform</span>
+          <Image
+            src="/villagereach-logo.svg"
+            alt="VillageReach"
+            width={160}
+            height={48}
+            className="brand-logo"
+            unoptimized
+            priority
+          />
+          <span className="brand-text">
+            <span className="brand-name">GTCOP Assessment</span>
+            <span className="brand-sub">A VillageReach platform</span>
+          </span>
         </Link>
 
         <button

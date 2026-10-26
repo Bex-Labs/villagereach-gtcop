@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import LevelPill from "@/components/LevelPill";
 
 export const metadata = { title: "Countries | GTCOP Assessment" };
 
@@ -7,13 +8,26 @@ export default async function CountriesPage({ searchParams }) {
   const { q = "", sort = "name" } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: countries }, { data: docs }] = await Promise.all([
+  const [{ data: countries }, { data: docs }, { data: levels }, { data: assessments }] = await Promise.all([
     supabase.from("countries").select("id, name, iso_code, region").eq("is_visible", true),
     supabase.from("documents").select("country_id").eq("status", "published"),
+    supabase.from("maturity_levels").select("level, name"),
+    supabase
+      .from("assessments")
+      .select("country_id, overall_level")
+      .eq("status", "published")
+      .order("round_label", { ascending: false }),
   ]);
 
   const counts = {};
   (docs ?? []).forEach((d) => (counts[d.country_id] = (counts[d.country_id] || 0) + 1));
+
+  // Latest published overall level for each country (QA fix: was always "Assessment in progress")
+  const levelName = Object.fromEntries((levels ?? []).map((l) => [l.level, l.name]));
+  const overall = {};
+  (assessments ?? []).forEach((a) => {
+    if (!(a.country_id in overall)) overall[a.country_id] = a.overall_level;
+  });
 
   let list = (countries ?? []).filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
   list.sort((a, b) =>
@@ -24,7 +38,7 @@ export default async function CountriesPage({ searchParams }) {
     <main className="container page">
       <p className="breadcrumbs"><Link href="/">Home</Link> / Countries</p>
       <p className="eyebrow">Country repositories</p>
-      <h1>Countries</h1>
+      <h1 className="display"><strong>Countries</strong></h1>
       <p className="muted">Every country in the GTCOP assessment, with its published documents.</p>
 
       <form className="filter-bar" role="search">
@@ -52,7 +66,13 @@ export default async function CountriesPage({ searchParams }) {
               <span className="country-count">
                 {counts[c.id] || 0} {counts[c.id] === 1 ? "document" : "documents"}
               </span>
-              <span className="country-level">Assessment in progress</span>
+              <span className="country-level">
+                {overall[c.id] ? (
+                  <LevelPill level={overall[c.id]} name={levelName[overall[c.id]]} />
+                ) : (
+                  "Assessment in progress"
+                )}
+              </span>
             </Link>
           ))}
         </div>

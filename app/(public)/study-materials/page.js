@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SECTIONS } from "@/lib/study";
+import IconDisc from "@/components/IconDisc";
+
+// Icon and colour for each section (same as the Home page)
+const STUDY_ICONS = {
+  matrix: { name: "grid", color: "rust" },
+  metrics: { name: "chart", color: "olive" },
+  recommendations: { name: "clipboard", color: "blue" },
+};
 
 export const metadata = {
   title: "Study materials | GTCOP Assessment",
@@ -21,7 +29,7 @@ export default async function StudyMaterialsPage() {
   return (
     <main className="container page">
       <p className="breadcrumbs"><Link href="/">Home</Link> / Study materials</p>
-      <h1>Study materials</h1>
+      <h1 className="display"><strong>Study</strong> materials</h1>
       <p className="muted">
         The thinking behind the rankings: the assessment matrix and metrics used to rank countries,
         and the policy recommendations developed from the findings.
@@ -36,7 +44,10 @@ export default async function StudyMaterialsPage() {
         const rows = items.filter((i) => i.section === s.key);
         return (
           <section key={s.key} id={s.key} className="card section-card">
-            <h2>{s.label}</h2>
+            <h2 className="with-icon">
+              <IconDisc name={STUDY_ICONS[s.key]?.name ?? "document"} color={STUDY_ICONS[s.key]?.color ?? "rust"} size="sm" />
+              {s.label}
+            </h2>
             <p className="muted">{s.description}</p>
 
             {rows.length === 0 ? (

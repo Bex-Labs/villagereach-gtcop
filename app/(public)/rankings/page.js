@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import LevelPill from "@/components/LevelPill";
+import RankingChart from "@/components/RankingChart";
 
 export const metadata = {
   title: "Telehealth maturity rankings | GTCOP Assessment",
@@ -8,7 +9,7 @@ export const metadata = {
 };
 
 // A clickable column heading that sorts the table
-function SortHeader({ label, column, sort, dir }) {
+function SortHeader({ label, column, sort, dir, chart }) {
   const active = sort === String(column);
   // Country sorts A→Z first; levels sort highest first
   const nextDir = active ? (dir === "asc" ? "desc" : "asc") : column === "country" ? "asc" : "desc";
@@ -17,7 +18,7 @@ function SortHeader({ label, column, sort, dir }) {
 
   return (
     <th scope="col" aria-sort={ariaSort}>
-      <Link href={`/rankings?sort=${column}&dir=${nextDir}`} scroll={false} className="sort-link">
+      <Link href={`/rankings?sort=${column}&dir=${nextDir}&chart=${chart}`} scroll={false} className="sort-link">
         {label} <span aria-hidden="true">{arrow}</span>
       </Link>
     </th>
@@ -25,7 +26,7 @@ function SortHeader({ label, column, sort, dir }) {
 }
 
 export default async function RankingsPage({ searchParams }) {
-  const { sort = "country", dir = "asc" } = await searchParams;
+  const { sort = "country", dir = "asc", chart = "overall" } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: areas }, { data: levels }, { data: assessments }] = await Promise.all([
@@ -54,6 +55,20 @@ export default async function RankingsPage({ searchParams }) {
     scores: Object.fromEntries(a.assessment_scores.map((s) => [s.area_id, s.level])),
   }));
 
+  // Bar chart: Overall, or one thematic area (chosen with the tabs above the chart)
+  const chartArea = (areas ?? []).find((a) => String(a.id) === chart);
+  const chartKey = chartArea ? chartArea.id : "overall";
+  const chartRows = rows
+    .map((r) => ({
+      name: r.name,
+      code: r.code,
+      round: r.round,
+      level: chartKey === "overall" ? r.overall : r.scores[chartKey],
+    }))
+    .sort((a, b) => (b.level ?? 0) - (a.level ?? 0) || a.name.localeCompare(b.name));
+  const chartTitle = chartArea ? chartArea.name : "Overall maturity";
+  const chartLink = (key) => `/rankings?sort=${sort}&dir=${dir}&chart=${key}`;
+
   // Sort by the chosen column (ties are sorted by country name)
   const valueOf = (r) =>
     sort === "country" ? r.name : sort === "overall" ? r.overall ?? 0 : r.scores[sort] ?? 0;
@@ -67,11 +82,38 @@ export default async function RankingsPage({ searchParams }) {
   return (
     <main className="container page">
       <p className="breadcrumbs"><Link href="/">Home</Link> / Rankings</p>
-      <h1>Telehealth maturity rankings</h1>
+      <h1 className="display">Telehealth maturity <strong>rankings</strong></h1>
       <p className="muted">
         How each country compares across the five thematic areas of VillageReach&apos;s GTCOP assessment.
         Click a column heading to sort.
       </p>
+
+      {rows.length > 0 && (
+        <section className="card section-card rank-chart-card">
+          <p className="eyebrow">At a glance</p>
+          <h2>{chartTitle} by country</h2>
+
+          {/* Choose what the bars show */}
+          <nav className="filter-tabs" aria-label="Choose what the chart shows">
+            <Link href={chartLink("overall")} scroll={false} className={chartKey === "overall" ? "active" : ""}
+              aria-current={chartKey === "overall" ? "true" : undefined}>
+              Overall
+            </Link>
+            {(areas ?? []).map((a) => (
+              <Link key={a.id} href={chartLink(a.id)} scroll={false} className={chartKey === a.id ? "active" : ""}
+                aria-current={chartKey === a.id ? "true" : undefined}>
+                {a.name}
+              </Link>
+            ))}
+          </nav>
+
+          <RankingChart
+            rows={chartRows}
+            levels={levelName}
+            caption={`${chartTitle}: latest published level for each country, highest first. The table below has every area.`}
+          />
+        </section>
+      )}
 
       {rows.length === 0 ? (
         <div className="card">
@@ -84,10 +126,10 @@ export default async function RankingsPage({ searchParams }) {
             <caption className="visually-hidden">Telehealth maturity level of each country, by thematic area</caption>
             <thead>
               <tr>
-                <SortHeader label="Country" column="country" sort={sort} dir={dir} />
-                <SortHeader label="Overall" column="overall" sort={sort} dir={dir} />
+                <SortHeader label="Country" column="country" sort={sort} dir={dir} chart={chart} />
+                <SortHeader label="Overall" column="overall" sort={sort} dir={dir} chart={chart} />
                 {(areas ?? []).map((a) => (
-                  <SortHeader key={a.id} label={a.name} column={a.id} sort={sort} dir={dir} />
+                  <SortHeader key={a.id} label={a.name} column={a.id} sort={sort} dir={dir} chart={chart} />
                 ))}
               </tr>
             </thead>
@@ -112,7 +154,7 @@ export default async function RankingsPage({ searchParams }) {
       )}
 
       <section className="section">
-        <h2>What the levels mean</h2>
+        <h2 className="display">What the <strong>levels mean</strong></h2>
         <ul className="level-legend">
           {(levels ?? []).map((l) => (
             <li key={l.level}>

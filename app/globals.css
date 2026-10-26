@@ -15,8 +15,8 @@
   --border: #D1C9C1;       /* thin warm-grey dividers */
 
   /* Maturity levels: light to dark */
-  --level-1: #E9C46A;      /* Emerging */
-  --level-2: #B5A55A;      /* Developing */
+  --level-1: #D9AE45;      /* Emerging (deepened so bars show on white) */
+  --level-2: #A99C4A;      /* Developing */
   --level-3: #7A7F3E;      /* Established */
   --level-4: #4F5A2A;      /* Advanced */
 }
@@ -65,7 +65,7 @@ button:focus-visible {
 .btn {
   display: inline-block;
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: 0;
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
@@ -213,7 +213,7 @@ body {
 .card {
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 32px;
 }
 
@@ -255,7 +255,7 @@ input {
   padding: 12px;
   font: inherit;
   border: 1px solid #B9B0A2;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--white);
 }
 
@@ -289,7 +289,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
 
 .alert {
   padding: 12px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   margin: 16px 0 0;
 }
 
@@ -329,7 +329,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
   background: none;
   color: var(--white);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 22px;
   cursor: pointer;
 }
@@ -391,7 +391,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
   color: #EFE7DC;
   text-decoration: none;
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 0;
   font-weight: 600;
   font-size: 15px;
 }
@@ -438,7 +438,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
 .badge {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 13px;
   font-weight: 600;
 }
@@ -451,7 +451,7 @@ select, textarea {
   padding: 12px;
   font: inherit;
   border: 1px solid #B9B0A2;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--white);
 }
 select:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
@@ -491,7 +491,7 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); o
 
 .drop-zone {
   border: 2px dashed #B9B0A2;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 28px 16px;
   text-align: center;
   background: #FBFAF7;
@@ -516,7 +516,7 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); o
   margin-top: 12px;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   background: #FBFAF7;
   font-size: 14px;
   word-break: break-all;
@@ -568,7 +568,7 @@ select[aria-invalid="true"] { border-color: #B42318; }
 .filter-tabs a {
   padding: 6px 14px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--white);
   color: var(--charcoal);
   text-decoration: none;
@@ -637,7 +637,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
 .iso-badge {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
+  border-radius: 0;
   background: #EFE9DF;
   color: var(--brown);
   font-weight: 700;
@@ -708,7 +708,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
   font-style: italic;
   background: #F3F1EC;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 @media (max-width: 600px) {
@@ -756,7 +756,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
   gap: 8px;
   padding: 4px 12px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 0;
   background: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -769,10 +769,10 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
   border-radius: 50%;
   background: var(--dot, #ccc);
 }
-.level-1 { --dot: #E9C46A; }
-.level-2 { --dot: #B5A55A; }
-.level-3 { --dot: #7A7F3E; }
-.level-4 { --dot: #4F5A2A; }
+.level-1 { --dot: var(--level-1); }
+.level-2 { --dot: var(--level-2); }
+.level-3 { --dot: var(--level-3); }
+.level-4 { --dot: var(--level-4); }
 .level-none { color: #5C6670; font-weight: 400; }
 .level-none::before { background: transparent; border: 1px dashed #9AA3AB; }
 
@@ -786,7 +786,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
 /* ===== Ranking form (D-02) ===== */
 .area-score {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 12px 16px;
   margin: 0 0 12px;
 }
@@ -862,7 +862,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
 .admin-sidebar nav a {
   display: block;
   padding: 9px 12px;
-  border-radius: 6px;
+  border-radius: 0;
   color: #fff;
   text-decoration: none;
   font-size: 15px;
@@ -1069,3 +1069,365 @@ summary:focus-visible { outline: 3px solid var(--rust-dark); outline-offset: 2px
 
 /* Upload box: show focus when the hidden file picker is focused */
 .drop-zone:focus-within { outline: 3px solid var(--rust-dark); outline-offset: 2px; }
+
+/* ===== VillageReach shapes (brand step 2) ===== */
+/* Square corners everywhere (set above), uppercase buttons,
+   and the brand's slanted cut on the bottom-right corner. */
+.btn {
+  --cut: 12px;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+}
+
+/* Outline buttons: draw the border along the slanted edge too */
+.btn-outline::after {
+  content: "";
+  position: absolute;
+  right: -2px;               /* line up with the outside of the 2px border */
+  bottom: -2px;
+  width: var(--cut);
+  height: var(--cut);
+  background: linear-gradient(to bottom right, transparent calc(50% - 2px), currentColor calc(50% - 2px), currentColor 50%, transparent 50%);
+  pointer-events: none;
+}
+
+/* A clipped corner would also cut off the keyboard focus outline, so drop the cut while focused */
+.btn:focus-visible { clip-path: none; }
+.btn:focus-visible::after { display: none; }
+
+/* Panels (cards) get the same slanted corner, with the border following it */
+.card {
+  --cut: 16px;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+}
+.card::after {
+  content: "";
+  position: absolute;
+  right: -1px;               /* line up with the outside of the 1px border */
+  bottom: -1px;
+  width: var(--cut);
+  height: var(--cut);
+  background: linear-gradient(to bottom right, transparent calc(50% - 1.5px), var(--border) calc(50% - 1.5px), var(--border) 50%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Arrow links in the brand style: small, bold, uppercase ("LEARN MORE →") */
+.study-link,
+.arrow-link {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.arrow-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ===== VillageReach header and footer (brand step 3) ===== */
+/* Header: solid dark brown (set in step 1), white name, small uppercase descriptor */
+.brand-name { font-size: 20px; letter-spacing: 0.01em; }
+.brand-sub {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #E8DFD3;
+}
+
+/* Footer: slate band, same small uppercase descriptor, white links with underline on hover */
+.footer-compact-inner { padding-top: 4px; padding-bottom: 4px; }
+.footer-compact .footer-sub {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #D5DADD;
+}
+.footer-compact nav a { font-weight: 600; }
+.footer-compact a:hover { text-underline-offset: 4px; }
+
+/* ===== VillageReach Home page (brand step 4) ===== */
+/* Display headings: Light, with the key words in Bold */
+.display { font-weight: 300; }
+.display strong { font-weight: 700; }
+
+/* Small uppercase kicker with a short rust line in front */
+.kicker { display: flex; align-items: center; gap: 12px; }
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--rust); flex: none; }
+
+/* Hero: text on the left, photo on the right */
+.hero { background: var(--cream); border-bottom: none; padding: 56px 0 64px; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
+}
+.hero h1 { font-size: clamp(36px, 4.4vw, 56px); margin: 16px 0 18px; }
+.hero-search { margin: 28px 0 18px; gap: 0; }
+.hero-search input { border: 2px solid var(--charcoal); border-right: none; }
+
+.hero-photo { position: relative; margin: 0; }
+.hero-photo img { display: block; width: 100%; height: auto; max-height: 500px; object-fit: cover; }
+.hero-photo figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: 92%;
+  padding: 10px 16px;
+  background: var(--charcoal);
+  color: #EDF0EC;
+  font-size: 14px;
+}
+/* Rust corner bracket, top right of the photo */
+.hero-photo::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 64px;
+  height: 64px;
+  border-top: 6px solid var(--rust);
+  border-right: 6px solid var(--rust);
+  pointer-events: none;
+}
+
+/* Stats band: big light numbers with icon circles, on slate */
+.stats-band { background: var(--charcoal); color: var(--white); }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+.stat-item { display: flex; align-items: center; gap: 16px; }
+.stat-big { margin: 0; font-size: 40px; font-weight: 300; line-height: 1.05; color: var(--white); }
+.stat-big-date { font-size: 24px; font-weight: 600; }
+.stat-caption { margin: 4px 0 0; font-size: 14px; color: #D5DADD; }
+
+/* Icon circles: thin white line icon on a brand colour */
+.icon-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+.icon-disc svg { width: 28px; height: 28px; }
+.icon-lg { width: 76px; height: 76px; }
+.icon-lg svg { width: 40px; height: 40px; }
+.icon-rust { background: var(--rust); }
+.icon-olive { background: var(--olive); }
+.icon-blue { background: var(--slate-blue); }
+.icon-slate { background: var(--charcoal); }
+
+/* Full-width sections that alternate between the two creams */
+.band { padding: 64px 0; }
+.band-cream-dark { background: var(--cream-dark); }
+.band h2 { margin: 6px 0 24px; font-size: clamp(28px, 3vw, 38px); }
+.band .stats { margin-top: 0; }
+.section-link { margin-top: 24px; }
+
+/* How it works: three numbered panels */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.step { padding: 28px 24px; }
+.step-n { margin: 0; font-size: 48px; font-weight: 300; line-height: 1; color: var(--rust); }
+.step:nth-child(2) .step-n { color: var(--olive); }
+.step:nth-child(3) .step-n { color: var(--slate-blue); }
+.step h3 { margin: 14px 0 8px; font-size: 20px; font-weight: 300; }
+.step h3 strong { font-weight: 700; }
+
+.study-card .icon-disc { margin-bottom: 10px; }
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .level-summary { grid-template-columns: 1fr; }   /* level pills don't fit two-across on phones */
+  .hero-search input { border-right: 2px solid var(--charcoal); }
+  .hero-search .btn { margin-top: 8px; }
+  .band { padding: 48px 0; }
+}
+
+/* ===== VillageReach logo in the header ===== */
+.brand { flex-direction: row; align-items: center; gap: 14px; }
+.brand-logo { height: 40px; width: auto; }
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);   /* thin divider between logo and name */
+}
+@media (max-width: 600px) {
+  .brand-logo { height: 32px; }
+}
+
+/* ===== VillageReach Home page design (brand step 4) ===== */
+/* Display headings: light text with the key words in bold */
+.display { font-weight: 300; letter-spacing: -0.01em; }
+.display strong { font-weight: 700; }
+h1.display { font-size: clamp(34px, 4.4vw, 52px); }
+h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
+
+/* Full-width bands that alternate between the two brand creams */
+.band { padding: 56px 0; }
+.band-alt { background: var(--cream-dark); }
+.hero.band-alt { border-bottom: none; }
+.band .stats { margin-top: 0; }
+.band-link { margin-top: 24px; }
+
+/* Bigger stat numbers */
+.stat-number { font-size: 40px; line-height: 1.1; margin-top: 12px; }
+.stat-date { font-size: 24px; }
+.level-summary .stat-number { margin-top: 4px; }
+
+/* Thin-line icons in coloured circles */
+.icon-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.icon-disc svg { width: 26px; height: 26px; }
+.icon-disc-sm { width: 40px; height: 40px; }
+.icon-disc-sm svg { width: 20px; height: 20px; }
+.icon-disc-rust { background: var(--rust); }
+.icon-disc-olive { background: var(--olive); }
+.icon-disc-blue { background: var(--slate-blue); }
+.icon-disc-slate { background: var(--charcoal); }
+.icon-disc-gold { background: var(--gold); }
+.study-card .icon-disc { margin-bottom: 8px; }
+
+
+.hero-text { color: var(--text); }
+
+/* No cream gap between the last band and the footer */
+.site-main:has(> main > .band:last-child) + .footer-compact { margin-top: 0; }
+
+/* ===== Home: totals as a slim line under the hero buttons (C-01) ===== */
+.hero-meta {
+  list-style: none;
+  padding: 0;
+  margin: 28px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  font-size: 15px;
+  color: var(--text);
+}
+.hero-meta li { display: inline-flex; align-items: center; gap: 8px; }
+.meta-dot { display: inline-block; width: 10px; height: 10px; }
+.meta-dot-rust { background: var(--rust); }
+.meta-dot-olive { background: var(--olive); }
+.meta-dot-blue { background: var(--slate-blue); }
+
+/* ===== VillageReach design on all other pages (brand step 5) ===== */
+/* Page titles in the light + bold style (pages add class="display") */
+.page h1.display { font-size: clamp(30px, 3.6vw, 44px); margin: 6px 0 16px; }
+.page h2.display { font-size: clamp(24px, 2.6vw, 32px); margin: 32px 0 16px; }
+
+/* Card and panel headings in slate */
+.card h2,
+.card h3 { color: var(--charcoal); }
+
+/* Tables: small uppercase headings on the darker cream */
+.table thead th,
+.rankings-table thead th:first-child {
+  background: var(--cream-dark);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.table td { border-bottom-color: var(--border); }
+
+/* Status badges: small, square, uppercase */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+}
+
+/* Filter tabs: square, active one in brand brown */
+.filter-tabs a { border-color: var(--border); }
+.filter-tabs a.active { background: var(--brown); border-color: var(--brown); color: var(--white); }
+
+/* Headings with an icon circle in front (Study materials) */
+.with-icon { display: flex; align-items: center; gap: 14px; }
+
+/* Admin and contributor areas: page titles in brown, cards on the cream background */
+.admin-main h1 { color: var(--text); }
+
+/* ===== Rankings bar chart ===== */
+.rank-chart-card .filter-tabs { margin: 12px 0 24px; }
+.rank-chart { margin: 0; }
+.rank-chart-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.rank-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 190px;
+  align-items: center;
+  gap: 16px;
+}
+.rank-country { font-weight: 600; color: var(--text); text-decoration: none; }
+.rank-country:hover { color: var(--rust); text-decoration: underline; text-underline-offset: 4px; }
+
+/* The track: faint guide lines at levels 1, 2, 3 and 4 */
+.rank-track {
+  position: relative;
+  height: 26px;
+  border-left: 1px solid var(--border);
+  background: repeating-linear-gradient(to right,
+    transparent 0, transparent calc(25% - 1px),
+    #E6E0D4 calc(25% - 1px), #E6E0D4 25%);
+}
+.rank-bar { position: absolute; left: 0; top: 0; bottom: 0; }
+.rank-bar-1 { background: var(--level-1); }
+.rank-bar-2 { background: var(--level-2); }
+.rank-bar-3 { background: var(--level-3); }
+.rank-bar-4 { background: var(--level-4); }
+.rank-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* Round under each country name; the row's bar darkens slightly on hover */
+.rank-name { display: flex; flex-direction: column; line-height: 1.25; }
+.rank-round { font-size: 12px; color: #5C6670; }
+.rank-row:hover .rank-bar,
+.rank-row:focus-within .rank-bar { filter: brightness(0.9); }
+
+/* Scale along the bottom */
+.rank-axis {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 190px;
+  gap: 16px;
+  margin-top: 8px;
+}
+.rank-axis-ticks { position: relative; height: 18px; font-size: 12px; color: #5C6670; }
+.rank-axis-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.rank-chart figcaption { margin-top: 16px; }
+
+/* Phones: name above the bar, level under it, no scale (each bar is labelled) */
+@media (max-width: 600px) {
+  .rank-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .rank-axis { display: none; }
+}
+
+.rank-row:hover .rank-country,
+.rank-row:focus-within .rank-country { color: var(--rust); }
