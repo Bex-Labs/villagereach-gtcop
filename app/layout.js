@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 // Load the Source Sans 3 font (the font VillageReach's website uses)
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["300", "400", "600", "700"],
   display: "swap",
 });
 
