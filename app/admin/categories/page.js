@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import AddCategoryForm from "./AddCategoryForm";
-import { renameCategory, deleteCategory } from "./actions";
+import { renameCategory, deleteCategory, moveDocuments } from "./actions";
+
+export const metadata = { title: "Categories | GTCOP Admin" };
 
 export default async function CategoriesAdminPage() {
   const supabase = await createClient();
@@ -51,7 +53,21 @@ export default async function CategoriesAdminPage() {
                           <button className="link-button">Delete</button>
                         </form>
                       ) : (
-                        <span className="muted small">In use</span>
+                        <form action={moveDocuments} className="inline-form">
+                          <input type="hidden" name="from" value={c.id} />
+                          <label htmlFor={`move-${c.id}`} className="visually-hidden">
+                            Move this category&apos;s documents to
+                          </label>
+                          <select id={`move-${c.id}`} name="to" defaultValue="" required>
+                            <option value="" disabled>Move documents to…</option>
+                            {categories
+                              .filter((other) => other.id !== c.id)
+                              .map((other) => (
+                                <option key={other.id} value={other.id}>{other.name}</option>
+                              ))}
+                          </select>
+                          <button className="link-button">Move</button>
+                        </form>
                       )}
                     </td>
                   </tr>

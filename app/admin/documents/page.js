@@ -9,6 +9,7 @@ const FILTERS = [
   { value: "published", label: "Published" },
   { value: "draft", label: "Drafts" },
   { value: "pending", label: "Pending review" },
+  { value: "rejected", label: "Sent back" },
   { value: "archived", label: "Archived" },
 ];
 
@@ -19,6 +20,8 @@ const BADGE = {
   rejected: "badge-error",
   archived: "badge-hidden",
 };
+
+const PER_PAGE = 50;
 
 // A small button that changes a document's status
 function StatusButton({ id, status, label }) {
@@ -32,18 +35,40 @@ function StatusButton({ id, status, label }) {
 }
 
 export default async function DocumentsAdminPage({ searchParams }) {
-  const { status = "all" } = await searchParams;
+  const { status = "all", q = "", country = "", page = "1" } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
   const supabase = await createClient();
 
+  const { data: countries } = await supabase.from("countries").select("id, name").order("name");
+
+  // Newest first, 50 per page, with optional search, country and status filters
   let query = supabase
     .from("documents")
-    .select("id, title, year, status, updated_at, countries(name), categories(name)")
-    .order("updated_at", { ascending: false });
+    .select("id, title, year, status, updated_at, countries(name), categories(name)", { count: "exact" })
+    .order("updated_at", { ascending: false })
+    .range((pageNum - 1) * PER_PAGE, pageNum * PER_PAGE - 1);
 
   if (status !== "all") query = query.eq("status", status);
+  if (country) query = query.eq("country_id", country);
+  const term = q.replace(/[%,()"\\]/g, " ").trim();
+  if (term) query = query.ilike("title", `%${term}%`);
 
-  const { data } = await query;
+  const { data, count } = await query;
   const documents = data ?? [];
+  const pages = Math.max(1, Math.ceil((count ?? 0) / PER_PAGE));
+
+  // Keeps the other filters when changing tab or page
+  const link = (changes) => {
+    const params = new URLSearchParams({
+      ...(status !== "all" && { status }),
+      ...(q && { q }),
+      ...(country && { country }),
+      ...changes,
+    });
+    for (const [key, value] of [...params]) if (!value || value === "all") params.delete(key);
+    const text = params.toString();
+    return text ? `/admin/documents?${text}` : "/admin/documents";
+  };
 
   return (
     <>
@@ -58,7 +83,7 @@ export default async function DocumentsAdminPage({ searchParams }) {
         {FILTERS.map((f) => (
           <Link
             key={f.value}
-            href={f.value === "all" ? "/admin/documents" : `/admin/documents?status=${f.value}`}
+            href={link({ status: f.value, page: "" })}
             className={status === f.value ? "active" : ""}
             aria-current={status === f.value ? "page" : undefined}
           >
@@ -66,6 +91,24 @@ export default async function DocumentsAdminPage({ searchParams }) {
           </Link>
         ))}
       </nav>
+
+      {/* Search by title and filter by country */}
+      <form className="filter-bar" role="search">
+        {status !== "all" && <input type="hidden" name="status" value={status} />}
+        <label htmlFor="q" className="visually-hidden">Search by title</label>
+        <input id="q" name="q" type="search" defaultValue={q} placeholder="Search by title" />
+        <label htmlFor="country" className="visually-hidden">Country</label>
+        <select id="country" name="country" defaultValue={country}>
+          <option value="">All countries</option>
+          {(countries ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <button className="btn btn-primary">Search</button>
+      </form>
+
+      <p className="muted small" role="status">
+        {count ?? 0} {count === 1 ? "document" : "documents"}
+        {(q || country) && <> · <Link href={link({ q: "", country: "", page: "" })}>Clear search</Link></>}
+      </p>
 
       <div className="card table-card">
         {documents.length === 0 ? (
@@ -86,7 +129,7 @@ export default async function DocumentsAdminPage({ searchParams }) {
             <tbody>
               {documents.map((d) => (
                 <tr key={d.id}>
-                  <td>{d.title}</td>
+                  <td><Link href={`/admin/documents/${d.id}`}>{d.title}</Link></td>
                   <td>{d.countries?.name}</td>
                   <td>{d.categories?.name}</td>
                   <td>{d.year}</td>
@@ -97,9 +140,12 @@ export default async function DocumentsAdminPage({ searchParams }) {
                   <td>
                     <div className="row-actions">
                       <Link href={`/admin/documents/${d.id}`} className="link-button">Edit</Link>
+                      {d.status === "pending" && <Link href="/admin/review" className="link-button">Review</Link>}
                       {d.status === "draft" && <StatusButton id={d.id} status="published" label="Publish" />}
                       {d.status === "published" && <StatusButton id={d.id} status="draft" label="Unpublish" />}
-                      {d.status !== "archived" && <StatusButton id={d.id} status="archived" label="Archive" />}
+                      {!["archived", "pending"].includes(d.status) && (
+                        <StatusButton id={d.id} status="archived" label="Archive" />
+                      )}
                       {d.status === "archived" && <StatusButton id={d.id} status="draft" label="Restore" />}
                     </div>
                   </td>
@@ -109,6 +155,14 @@ export default async function DocumentsAdminPage({ searchParams }) {
           </table>
         )}
       </div>
+
+      {pages > 1 && (
+        <nav className="pager" aria-label="Pages">
+          {pageNum > 1 && <Link href={link({ page: String(pageNum - 1) })} className="btn btn-outline">← Newer</Link>}
+          <span className="muted">Page {pageNum} of {pages}</span>
+          {pageNum < pages && <Link href={link({ page: String(pageNum + 1) })} className="btn btn-outline">Older →</Link>}
+        </nav>
+      )}
     </>
   );
 }

@@ -8,25 +8,8 @@ export const metadata = {
   description: "Compare countries' telehealth maturity across five thematic areas.",
 };
 
-// A clickable column heading that sorts the table
-function SortHeader({ label, column, sort, dir, chart }) {
-  const active = sort === String(column);
-  // Country sorts A→Z first; levels sort highest first
-  const nextDir = active ? (dir === "asc" ? "desc" : "asc") : column === "country" ? "asc" : "desc";
-  const ariaSort = active ? (dir === "asc" ? "ascending" : "descending") : "none";
-  const arrow = active ? (dir === "asc" ? "↑" : "↓") : "↕";
-
-  return (
-    <th scope="col" aria-sort={ariaSort}>
-      <Link href={`/rankings?sort=${column}&dir=${nextDir}&chart=${chart}`} scroll={false} className="sort-link">
-        {label} <span aria-hidden="true">{arrow}</span>
-      </Link>
-    </th>
-  );
-}
-
 export default async function RankingsPage({ searchParams }) {
-  const { sort = "country", dir = "asc", chart = "overall" } = await searchParams;
+  const { sort = "level" } = await searchParams; // "level" (highest first) or "name" (A–Z)
   const supabase = await createClient();
 
   const [{ data: areas }, { data: levels }, { data: assessments }] = await Promise.all([
@@ -55,29 +38,12 @@ export default async function RankingsPage({ searchParams }) {
     scores: Object.fromEntries(a.assessment_scores.map((s) => [s.area_id, s.level])),
   }));
 
-  // Bar chart: Overall, or one thematic area (chosen with the tabs above the chart)
-  const chartArea = (areas ?? []).find((a) => String(a.id) === chart);
-  const chartKey = chartArea ? chartArea.id : "overall";
-  const chartRows = rows
-    .map((r) => ({
-      name: r.name,
-      code: r.code,
-      round: r.round,
-      level: chartKey === "overall" ? r.overall : r.scores[chartKey],
-    }))
-    .sort((a, b) => (b.level ?? 0) - (a.level ?? 0) || a.name.localeCompare(b.name));
-  const chartTitle = chartArea ? chartArea.name : "Overall maturity";
-  const chartLink = (key) => `/rankings?sort=${sort}&dir=${dir}&chart=${key}`;
-
-  // Sort by the chosen column (ties are sorted by country name)
-  const valueOf = (r) =>
-    sort === "country" ? r.name : sort === "overall" ? r.overall ?? 0 : r.scores[sort] ?? 0;
-  rows.sort((a, b) => {
-    const x = valueOf(a);
-    const y = valueOf(b);
-    const result = typeof x === "string" ? x.localeCompare(y) : x - y;
-    return (dir === "desc" ? -result : result) || a.name.localeCompare(b.name);
-  });
+  // One country order for every chart, so a country sits in the same place in each
+  rows.sort((a, b) =>
+    sort === "name"
+      ? a.name.localeCompare(b.name)
+      : (b.overall ?? 0) - (a.overall ?? 0) || a.name.localeCompare(b.name)
+  );
 
   return (
     <main className="container page">
@@ -85,35 +51,7 @@ export default async function RankingsPage({ searchParams }) {
       <h1 className="display">Telehealth maturity <strong>rankings</strong></h1>
       <p className="muted">
         How each country compares across the five thematic areas of VillageReach&apos;s GTCOP assessment.
-        Click a column heading to sort.
       </p>
-
-      {rows.length > 0 && (
-        <section className="card section-card rank-chart-card">
-          <p className="eyebrow">At a glance</p>
-          <h2>{chartTitle} by country</h2>
-
-          {/* Choose what the bars show */}
-          <nav className="filter-tabs" aria-label="Choose what the chart shows">
-            <Link href={chartLink("overall")} scroll={false} className={chartKey === "overall" ? "active" : ""}
-              aria-current={chartKey === "overall" ? "true" : undefined}>
-              Overall
-            </Link>
-            {(areas ?? []).map((a) => (
-              <Link key={a.id} href={chartLink(a.id)} scroll={false} className={chartKey === a.id ? "active" : ""}
-                aria-current={chartKey === a.id ? "true" : undefined}>
-                {a.name}
-              </Link>
-            ))}
-          </nav>
-
-          <RankingChart
-            rows={chartRows}
-            levels={levelName}
-            caption={`${chartTitle}: latest published level for each country, highest first. The table below has every area.`}
-          />
-        </section>
-      )}
 
       {rows.length === 0 ? (
         <div className="card">
@@ -121,36 +59,26 @@ export default async function RankingsPage({ searchParams }) {
           <p className="muted">The assessment is in progress. Published rankings will appear here.</p>
         </div>
       ) : (
-        <div className="card table-scroll" tabIndex={0} role="region" aria-label="Rankings table (scrolls sideways on small screens)">
-          <table className="table rankings-table">
-            <caption className="visually-hidden">Telehealth maturity level of each country, by thematic area</caption>
-            <thead>
-              <tr>
-                <SortHeader label="Country" column="country" sort={sort} dir={dir} chart={chart} />
-                <SortHeader label="Overall" column="overall" sort={sort} dir={dir} chart={chart} />
-                {(areas ?? []).map((a) => (
-                  <SortHeader key={a.id} label={a.name} column={a.id} sort={sort} dir={dir} chart={chart} />
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.code}>
-                  <th scope="row">
-                    <Link href={`/countries/${r.code}`}>{r.name}</Link>
-                    <span className="muted small round-label">{r.round}</span>
-                  </th>
-                  <td><LevelPill level={r.overall} name={levelName[r.overall]} /></td>
-                  {(areas ?? []).map((a) => (
-                    <td key={a.id}>
-                      <LevelPill level={r.scores[a.id]} name={levelName[r.scores[a.id]]} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Sort order for all the charts */}
+          <nav className="filter-tabs" aria-label="Order of countries in the charts">
+            <Link href="/rankings?sort=level" scroll={false} className={sort !== "name" ? "active" : ""}
+              aria-current={sort !== "name" ? "true" : undefined}>
+              Highest first
+            </Link>
+            <Link href="/rankings?sort=name" scroll={false} className={sort === "name" ? "active" : ""}
+              aria-current={sort === "name" ? "true" : undefined}>
+              A–Z
+            </Link>
+          </nav>
+
+          {/* One grouped bar chart: every country, overall + each thematic area */}
+          <section className="card section-card">
+            <p className="eyebrow">Maturity by country</p>
+            <h2>Overall and thematic area levels</h2>
+            <RankingChart rows={rows} areas={areas ?? []} levels={levelName} />
+          </section>
+        </>
       )}
 
       <section className="section">

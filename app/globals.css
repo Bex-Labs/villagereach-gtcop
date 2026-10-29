@@ -1376,58 +1376,118 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 /* Admin and contributor areas: page titles in brown, cards on the cream background */
 .admin-main h1 { color: var(--text); }
 
-/* ===== Rankings bar chart ===== */
-.rank-chart-card .filter-tabs { margin: 12px 0 24px; }
-.rank-chart { margin: 0; }
-.rank-chart-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.rank-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 160px minmax(0, 1fr) 190px;
-  align-items: center;
-  gap: 16px;
-}
-.rank-country { font-weight: 600; color: var(--text); text-decoration: none; }
-.rank-country:hover { color: var(--rust); text-decoration: underline; text-underline-offset: 4px; }
+/* ===== Rankings: grouped bar chart ===== */
+.gchart { --plot: 300px; margin: 0; }
 
-/* The track: faint guide lines at levels 1, 2, 3 and 4 */
-.rank-track {
-  position: relative;
-  height: 26px;
-  border-left: 1px solid var(--border);
-  background: repeating-linear-gradient(to right,
+.gchart-legend {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.gchart-legend li { display: inline-flex; align-items: center; gap: 8px; }
+.gchart-swatch { width: 14px; height: 14px; display: inline-block; }
+
+/* Level scale (left) + plot that scrolls sideways when there are many countries */
+.gchart-body { display: grid; grid-template-columns: 116px minmax(0, 1fr); }
+.gchart-axis { position: relative; height: var(--plot); margin-top: 40px; }
+.gchart-axis span {
+  position: absolute;
+  right: 12px;
+  transform: translateY(50%);
+  font-size: 12px;
+  color: #5C6670;
+  white-space: nowrap;
+}
+.gchart-axis strong { color: var(--text); }
+
+.gchart-scroll { overflow-x: auto; padding-top: 40px; }   /* room for numbers and hover labels */
+.gchart-groups { list-style: none; margin: 0; padding: 0; display: flex; min-width: min-content; }
+.gchart-group { flex: 1 0 auto; padding: 0 14px; }
+
+/* One group: faint guide lines at each level, dark baseline */
+.gchart-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: var(--plot);
+  border-bottom: 2px solid var(--charcoal);
+  background: repeating-linear-gradient(to top,
     transparent 0, transparent calc(25% - 1px),
     #E6E0D4 calc(25% - 1px), #E6E0D4 25%);
 }
-.rank-bar { position: absolute; left: 0; top: 0; bottom: 0; }
-.rank-bar-1 { background: var(--level-1); }
-.rank-bar-2 { background: var(--level-2); }
-.rank-bar-3 { background: var(--level-3); }
-.rank-bar-4 { background: var(--level-4); }
-.rank-value { font-size: 14px; font-weight: 600; color: var(--text); }
+.gchart-slot { position: relative; width: 18px; height: 100%; }
+.gchart-slot.is-overall { width: 24px; margin-right: 6px; }   /* Overall: a little wider, set apart */
+.gchart-bar { position: absolute; left: 0; right: 0; bottom: 0; }
+.gchart-slot:hover .gchart-bar { filter: brightness(0.9); }
 
-/* Round under each country name; the row's bar darkens slightly on hover */
-.rank-name { display: flex; flex-direction: column; line-height: 1.25; }
-.rank-round { font-size: 12px; color: #5C6670; }
-.rank-row:hover .rank-bar,
-.rank-row:focus-within .rank-bar { filter: brightness(0.9); }
-
-/* Scale along the bottom */
-.rank-axis {
-  display: grid;
-  grid-template-columns: 160px minmax(0, 1fr) 190px;
-  gap: 16px;
-  margin-top: 8px;
+/* Level number on top of each bar */
+.gchart-value {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
 }
-.rank-axis-ticks { position: relative; height: 18px; font-size: 12px; color: #5C6670; }
-.rank-axis-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
-.rank-chart figcaption { margin-top: 16px; }
+.gchart-none { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); color: #5C6670; font-size: 12px; }
 
-/* Phones: name above the bar, level under it, no scale (each bar is labelled) */
+/* Hover label: "Thematic area 2: Level 3 · Established" */
+.gchart-tip {
+  position: absolute;
+  bottom: calc(100% + 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 4px 10px;
+  background: var(--brown);
+  color: var(--white);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.gchart-slot:hover .gchart-tip { opacity: 1; }
+
+/* Country name under each group */
+.gchart-country {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.gchart-country a { color: var(--text); text-decoration: none; }
+.gchart-country a:hover { color: var(--rust); text-decoration: underline; text-underline-offset: 3px; }
+.gchart-round { display: block; font-size: 12px; font-weight: 400; color: #5C6670; }
+.gchart figcaption { margin-top: 20px; }
+
 @media (max-width: 600px) {
-  .rank-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .rank-axis { display: none; }
+  .gchart { --plot: 220px; }
+  .gchart-body { grid-template-columns: 30px minmax(0, 1fr); }
+  .gchart-axis span { font-size: 0; }                 /* phones: numbers only on the scale */
+  .gchart-axis strong { font-size: 12px; }
 }
 
-.rank-row:hover .rank-country,
-.rank-row:focus-within .rank-country { color: var(--rust); }
+
+/* ===== Admin QA: the slanted corner line follows the card's hover colour ===== */
+.card::after {
+  background: linear-gradient(to bottom right, transparent calc(50% - 1.5px), var(--cut-line, var(--border)) calc(50% - 1.5px), var(--cut-line, var(--border)) 50%, transparent 50%);
+}
+.stat-link:hover,
+.country-card:hover,
+.study-card:hover { --cut-line: var(--rust); }
+
+/* Categories: the "move documents" control fits in the table row */
+.inline-form select { width: auto; padding: 8px 10px; }

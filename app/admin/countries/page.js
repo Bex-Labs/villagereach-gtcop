@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AddCountryForm from "./AddCountryForm";
+
+export const metadata = { title: "Countries | GTCOP Admin" };
 import { setVisibility } from "./actions";
 
 export default async function CountriesAdminPage() {

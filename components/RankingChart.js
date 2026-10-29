@@ -1,50 +1,92 @@
 import Link from "next/link";
 
-// Horizontal bar chart of maturity levels (1 to 4), one bar per country.
-// The bar's length and colour both show the level, and the level name is always
-// written beside it, so the chart never relies on colour alone.
-// The full table under the chart is the accessible "table view" of the same data.
-export default function RankingChart({ rows, levels, caption }) {
-  const MAX = 4;
-  const label = (level) => (level ? `Level ${level} · ${levels[level] ?? ""}` : "Not assessed");
+// Grouped bar chart: one group of bars per country.
+// In each group: the Overall level first (dark slate), then one bar per thematic area.
+// Height = maturity level (1 to 4). The level number is written on top of every bar,
+// the level names run up the side, and each area keeps the same colour in every group,
+// so the chart never relies on colour alone. Screen readers hear every bar in words.
+
+// Colours for the thematic areas, in order (checked for colour-blind separation)
+const AREA_COLOURS = ["#A2522D", "#2A72B5", "#5F7F1F", "#8A4C9E", "#C28A17"];
+const OVERALL_COLOUR = "#424F57";
+const MAX = 4;
+
+export default function RankingChart({ rows, areas, levels }) {
+  const series = [
+    { key: "overall", name: "Overall", colour: OVERALL_COLOUR, valueOf: (r) => r.overall },
+    ...areas.map((a, i) => ({
+      key: a.id,
+      name: a.name,
+      colour: AREA_COLOURS[i % AREA_COLOURS.length],
+      valueOf: (r) => r.scores[a.id],
+    })),
+  ];
+  const levelText = (l) => (l ? `Level ${l} · ${levels[l] ?? ""}` : "Not assessed");
 
   return (
-    <figure className="rank-chart">
-      <ol className="rank-chart-rows" aria-label={caption}>
-        {rows.map((r) => (
-          <li key={r.code} className="rank-row">
-            <span className="rank-name">
-              <Link href={`/countries/${r.code}`} className="rank-country">
-                {r.name}
-              </Link>
-              <span className="rank-round">Round {r.round}</span>
-            </span>
-
-            <span className="rank-track" aria-hidden="true">
-              {r.level ? (
-                <span className={`rank-bar rank-bar-${r.level}`} style={{ width: `${(r.level / MAX) * 100}%` }} />
-              ) : null}
-            </span>
-
-            <span className="rank-value">{label(r.level)}</span>
+    <figure className="gchart">
+      {/* Legend: what each colour means */}
+      <ul className="gchart-legend">
+        {series.map((s) => (
+          <li key={s.key}>
+            <span className="gchart-swatch" style={{ background: s.colour }} aria-hidden="true" />
+            {s.name}
           </li>
         ))}
-      </ol>
+      </ul>
 
-      {/* Scale along the bottom: 1 Emerging … 4 Advanced */}
-      <div className="rank-axis" aria-hidden="true">
-        <span />
-        <span className="rank-axis-ticks">
-          {[1, 2, 3, 4].map((l) => (
-            <span key={l} style={{ left: `${(l / MAX) * 100}%` }}>
-              {l} · {levels[l]}
+      <div className="gchart-body">
+        {/* Level scale up the side */}
+        <div className="gchart-axis" aria-hidden="true">
+          {[4, 3, 2, 1].map((l) => (
+            <span key={l} style={{ bottom: `${(l / MAX) * 100}%` }}>
+              <strong>{l}</strong> {levels[l]}
             </span>
           ))}
-        </span>
-        <span />
+        </div>
+
+        <div className="gchart-scroll">
+          <ol className="gchart-groups">
+            {rows.map((r) => (
+              <li key={r.code} className="gchart-group">
+                <ul className="gchart-bars">
+                  {series.map((s) => {
+                    const level = s.valueOf(r);
+                    return (
+                      <li key={s.key} className={`gchart-slot ${s.key === "overall" ? "is-overall" : ""}`}>
+                        {level ? (
+                          <span
+                            className="gchart-bar"
+                            style={{ height: `${(level / MAX) * 100}%`, background: s.colour }}
+                          >
+                            <span className="gchart-value" aria-hidden="true">{level}</span>
+                            <span className="gchart-tip" aria-hidden="true">
+                              {s.name}: {levelText(level)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="gchart-none" aria-hidden="true">–</span>
+                        )}
+                        <span className="visually-hidden">
+                          {r.name}, {s.name}: {levelText(level)}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="gchart-country">
+                  <Link href={`/countries/${r.code}`}>{r.name}</Link>
+                  <span className="gchart-round">Round {r.round}</span>
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
 
-      <figcaption className="muted small">{caption}</figcaption>
+      <figcaption className="muted small">
+        Maturity level (1 to 4) of each country: overall and in each thematic area. Latest published round.
+      </figcaption>
     </figure>
   );
 }

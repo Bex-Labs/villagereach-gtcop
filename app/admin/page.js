@@ -52,7 +52,7 @@ export default async function AdminDashboard() {
   const stats = [
     { label: "Published documents", value: published ?? 0, href: "/admin/documents?status=published" },
     { label: "Drafts", value: drafts ?? 0, href: "/admin/documents?status=draft" },
-    { label: "Pending review", value: pending ?? 0, href: "/admin/documents?status=pending" },
+    { label: "Pending review", value: pending ?? 0, href: "/admin/review" },
     { label: "Unranked countries", value: unranked.length, href: "/admin/rankings" },
   ];
 

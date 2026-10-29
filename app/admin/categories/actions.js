@@ -52,3 +52,18 @@ export async function deleteCategory(formData) {
   await supabase.from("categories").delete().eq("id", id);
   revalidatePath("/admin/categories");
 }
+// Move every document from one category to another (B-02 AC3),
+// so a category that is in use can then be deleted
+export async function moveDocuments(formData) {
+  const from = formData.get("from");
+  const to = formData.get("to");
+  if (!from || !to || from === to) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("documents")
+    .update({ category_id: Number(to), updated_at: new Date().toISOString() })
+    .eq("category_id", from);
+
+  revalidatePath("/admin/categories");
+}
