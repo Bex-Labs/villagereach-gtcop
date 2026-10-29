@@ -6,14 +6,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const MAX_ATTEMPTS = 5;   // A-01 AC3
 const LOCK_MINUTES = 15;
-const GENERAL_ERROR = "That email or password is incorrect. Please try again.";
+const GENERAL_ERROR = "That email, username or password is incorrect. Please try again.";
 const lockMessage = (mins) =>
   `Too many failed attempts. Please wait ${mins} minute${mins === 1 ? "" : "s"} and try again, or reset your password.`;
 
 export async function signIn(formData) {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  // A username (no @) becomes its sign-in email, e.g. demo → demo@gtcop.local
+  const entered = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = entered.includes("@") ? entered : `${entered}@gtcop.local`;
   const password = String(formData.get("password") ?? "");
-  if (!email || !password) return { error: "Enter your email and password." };
+  if (!entered || !password) return { error: "Enter your email or username and password." };
 
   // 1. Is this account paused?
   const admin = createAdminClient();

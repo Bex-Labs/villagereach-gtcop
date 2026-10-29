@@ -34,8 +34,8 @@ export default function SignInForm({ expired }) {
         {error && <div className="alert alert-error" role="alert">{error}</div>}
 
         <form onSubmit={handleSubmit} noValidate>
-          <label htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" autoComplete="email" aria-invalid={error ? true : undefined} />
+          <label htmlFor="email">Email or username</label>
+          <input id="email" name="email" type="text" autoComplete="username" aria-invalid={error ? true : undefined} />
 
           <label htmlFor="password">Password</label>
           <div className="password-field">
