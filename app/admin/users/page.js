@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import InviteForm from "./InviteForm";
@@ -10,6 +11,11 @@ export default async function UsersPage({ searchParams }) {
   const { saved, error } = await searchParams;
   const supabase = await createClient();
   const { data: { user: me } } = await supabase.auth.getUser();
+
+  // This page uses the secret key, so check again here that this is an active admin
+  const { data: myProfile } = await supabase.from("profiles").select("role, is_active").eq("id", me?.id).single();
+  if (myProfile?.role !== "admin" || !myProfile.is_active) notFound();
+
   const admin = createAdminClient();
 
   const [{ data: profiles }, { data: authData }, { data: countries }] = await Promise.all([

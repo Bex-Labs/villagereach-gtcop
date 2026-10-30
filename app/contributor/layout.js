@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminSidebar from "@/components/AdminSidebar";
 import SignOutButton from "@/components/SignOutButton";
+import InactivityTimer from "@/components/InactivityTimer";
 
 export const metadata = { title: "Contributor | GTCOP Assessment" };
 
@@ -40,6 +41,7 @@ export default async function ContributorLayout({ children }) {
 
   return (
     <div className="admin-shell">
+      <InactivityTimer />
       <AdminSidebar
         name={profile.full_name}
         role={`${country?.name ?? "Country"} contributor`}

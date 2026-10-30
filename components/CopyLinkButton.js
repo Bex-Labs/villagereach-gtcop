@@ -6,7 +6,13 @@ export default function CopyLinkButton() {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
-    await navigator.clipboard.writeText(window.location.href);
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      // Some browsers block copying: show the link so it can be copied by hand
+      window.prompt("Copy this link:", window.location.href);
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
