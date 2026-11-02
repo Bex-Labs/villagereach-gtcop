@@ -27,16 +27,15 @@ export default function Header({ signedIn }) {
       <div className="container header-inner">
         <Link href="/" className="brand" onClick={close}>
           <Image
-            src="/villagereach-logo.svg"
-            alt="VillageReach"
-            width={160}
-            height={48}
+            src="/gtcop-logo-white.svg"
+            alt="GTCOP, Global Telehealth Community of Practice"
+            width={184}
+            height={80}
             className="brand-logo"
             unoptimized
             priority
           />
           <span className="brand-text">
-            <span className="brand-name">GTCOP Assessment</span>
             <span className="brand-sub">A VillageReach platform</span>
           </span>
         </Link>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import LevelPill from "@/components/LevelPill";
 import RankingChart from "@/components/RankingChart";
+import { averageLevel, levelFromAverage } from "@/lib/ranking";
 
 export const metadata = {
   title: "Telehealth maturity rankings | GTCOP Assessment",
@@ -12,8 +13,7 @@ export default async function RankingsPage({ searchParams }) {
   const { sort = "level" } = await searchParams; // "level" (highest first) or "name" (A–Z)
   const supabase = await createClient();
 
-  const [{ data: areas }, { data: levels }, { data: assessments }] = await Promise.all([
-    supabase.from("thematic_areas").select("id, name, description").order("sort_order"),
+  const [{ data: levels }, { data: assessments }] = await Promise.all([
     supabase.from("maturity_levels").select("level, name, description").order("level"),
     supabase
       .from("assessments")
@@ -30,19 +30,23 @@ export default async function RankingsPage({ searchParams }) {
   for (const a of assessments ?? []) {
     if (!latest.has(a.countries.iso_code)) latest.set(a.countries.iso_code, a);
   }
-  const rows = [...latest.values()].map((a) => ({
-    name: a.countries.name,
-    code: a.countries.iso_code.toLowerCase(),
-    round: a.round_label,
-    overall: a.overall_level,
-    scores: Object.fromEntries(a.assessment_scores.map((s) => [s.area_id, s.level])),
-  }));
 
-  // One country order for every chart, so a country sits in the same place in each
+  // Overall = average of the five thematic areas (see lib/ranking.js)
+  const rows = [...latest.values()].map((a) => {
+    const avg = averageLevel(a.assessment_scores.map((s) => s.level)) ?? a.overall_level ?? null;
+    return {
+      name: a.countries.name,
+      code: a.countries.iso_code.toLowerCase(),
+      round: a.round_label,
+      avg,
+      level: levelFromAverage(avg),
+      scores: Object.fromEntries(a.assessment_scores.map((s) => [s.area_id, s.level])),
+    };
+  });
+
+  // Highest average first (ties A–Z), or A–Z
   rows.sort((a, b) =>
-    sort === "name"
-      ? a.name.localeCompare(b.name)
-      : (b.overall ?? 0) - (a.overall ?? 0) || a.name.localeCompare(b.name)
+    sort === "name" ? a.name.localeCompare(b.name) : (b.avg ?? 0) - (a.avg ?? 0) || a.name.localeCompare(b.name)
   );
 
   return (
@@ -60,8 +64,8 @@ export default async function RankingsPage({ searchParams }) {
         </div>
       ) : (
         <>
-          {/* Sort order for all the charts */}
-          <nav className="filter-tabs" aria-label="Order of countries in the charts">
+          {/* Order of countries in the chart */}
+          <nav className="filter-tabs" aria-label="Order of countries in the chart">
             <Link href="/rankings?sort=level" scroll={false} className={sort !== "name" ? "active" : ""}
               aria-current={sort !== "name" ? "true" : undefined}>
               Highest first
@@ -72,11 +76,11 @@ export default async function RankingsPage({ searchParams }) {
             </Link>
           </nav>
 
-          {/* One grouped bar chart: every country, overall + each thematic area */}
+          {/* One bar per country: the average of its five thematic areas */}
           <section className="card section-card">
             <p className="eyebrow">Maturity by country</p>
-            <h2>Overall and thematic area levels</h2>
-            <RankingChart rows={rows} areas={areas ?? []} levels={levelName} />
+            <h2>Overall maturity level</h2>
+            <RankingChart rows={rows} levels={levelName} />
           </section>
         </>
       )}

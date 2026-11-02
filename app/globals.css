@@ -1,24 +1,25 @@
 /* ===== VillageReach brand colours (from villagereach.org) ===== */
 :root {
-  --brown: #413122;        /* dark brown: solid header */
-  --rust: #A2522D;         /* primary brand colour: main buttons, CTA panels, hover underlines */
-  --rust-dark: #803C1D;    /* button hover */
-  --olive: #726C3E;        /* secondary buttons */
-  --olive-light: #958D55;  /* info panels (no small white text on it) */
-  --gold: #B79443;         /* accent shapes and lines (never small text) */
-  --slate-blue: #6D8C9D;   /* dusty blue: soft accent */
-  --charcoal: #424F57;     /* slate: footer and card headings */
-  --cream: #F9F8F4;        /* page background */
-  --cream-dark: #F0EBDD;   /* alternating section background */
+  /* GTCOP colours (Option B). Names kept from before so nothing else needs changing. */
+  --brown: #0B4454;        /* GTCOP teal: solid header (was dark brown) */
+  --rust: #0B4454;         /* GTCOP teal: main buttons, CTA panels, hover underlines (was rust) */
+  --rust-dark: #083642;    /* darker teal: button hover */
+  --olive: #1F6B7E;        /* mid teal: secondary buttons */
+  --olive-light: #2D7487;  /* soft teal: info panels (no small white text on it) */
+  --gold: #B79443;         /* accent shapes and lines (never small text), unchanged */
+  --slate-blue: #8FC0CC;   /* light teal: soft accent */
+  --charcoal: #1B3038;     /* GTCOP ink: footer and card headings */
+  --cream: #F9F8F4;        /* page background, unchanged */
+  --cream-dark: #F0EBDD;   /* alternating section background, unchanged */
   --white: #FFFFFF;
-  --text: #5A422D;         /* brown: headings and body text */
-  --border: #D1C9C1;       /* thin warm-grey dividers */
+  --text: #1B3038;         /* GTCOP ink: headings and body text (was brown) */
+  --border: #D1C9C1;       /* thin warm-grey dividers, unchanged */
 
-  /* Maturity levels: light to dark */
-  --level-1: #D9AE45;      /* Emerging (deepened so bars show on white) */
-  --level-2: #A99C4A;      /* Developing */
-  --level-3: #7A7F3E;      /* Established */
-  --level-4: #4F5A2A;      /* Advanced */
+  /* Maturity levels: light to dark teal (each still shows on white) */
+  --level-1: #4E97A9;      /* Emerging */
+  --level-2: #2D7487;      /* Developing */
+  --level-3: #165A6B;      /* Established */
+  --level-4: #0B4454;      /* Advanced */
 }
 
 /* ===== Basic page styles ===== */
@@ -308,7 +309,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
   color: var(--rust);
   border: 2px solid var(--rust);
 }
-.btn-outline:hover { background: #F6EAE3; }
+.btn-outline:hover { background: #E1ECEF; }
 
 /* ===== Header layout + mobile menu (UX-05) ===== */
 .nav-wrap {
@@ -396,7 +397,7 @@ input[aria-invalid="true"] { border-color: #B42318; }
   font-size: 15px;
 }
 .admin-sidebar nav a:hover { background: rgba(255, 255, 255, 0.08); color: var(--white); }
-.admin-sidebar nav a.active { background: var(--rust); color: var(--white); }
+.admin-sidebar nav a.active { background: var(--olive); color: var(--white); } /* lighter teal so it shows on the teal sidebar */
 
 .admin-user {
   margin-top: auto;
@@ -497,7 +498,7 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); o
   background: #FBFAF7;
 }
 .drop-zone p { margin: 4px 0; }
-.drop-zone.is-over { border-color: var(--rust); background: #F6EAE3; }
+.drop-zone.is-over { border-color: var(--rust); background: #E1ECEF; }
 .drop-zone.has-error { border-color: #B42318; }
 
 .link-label {
@@ -869,7 +870,7 @@ input[type="file"] { padding: 10px; background: #FBFAF7; }
   font-weight: 600;
 }
 .admin-sidebar nav a:hover { background: rgba(255, 255, 255, 0.08); }
-.admin-sidebar nav a.is-active { background: var(--rust); }
+.admin-sidebar nav a.is-active { background: var(--olive); } /* lighter teal so it shows on the teal sidebar */
 .admin-sidebar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 .sidebar-user {
@@ -935,6 +936,9 @@ body > header {
 .header-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .site-header .btn-outline { color: var(--white); border-color: rgba(255, 255, 255, 0.6); }
 .site-header .btn-outline:hover { background: rgba(255, 255, 255, 0.1); color: var(--white); }
+/* Option B: the header is teal now, so its main buttons are white with teal text */
+.site-header .btn-primary { background: var(--white); color: var(--rust); }
+.site-header .btn-primary:hover { background: #E1ECEF; color: var(--rust-dark); }
 
 @media (max-width: 768px) {
   .header-actions { flex-direction: column; }
@@ -1263,15 +1267,21 @@ summary:focus-visible { outline: 3px solid var(--rust-dark); outline-offset: 2px
 
 /* ===== VillageReach logo in the header ===== */
 .brand { flex-direction: row; align-items: center; gap: 14px; }
-.brand-logo { height: 40px; width: auto; }
+.brand-logo { height: 76px; width: auto; }
 .brand-text {
   display: flex;
   flex-direction: column;
   padding-left: 14px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);   /* thin divider between logo and name */
 }
+/* Tablets and small laptops: less room, so a smaller logo and no "A VillageReach platform" */
+@media (max-width: 1100px) {
+  .brand-logo { height: 60px; }
+  .brand-text { display: none; }
+}
+.main-nav a, .site-header .btn { white-space: nowrap; }   /* menu items and Sign in never break in half */
 @media (max-width: 600px) {
-  .brand-logo { height: 32px; }
+  .brand-logo { height: 52px; }
 }
 
 /* ===== VillageReach Home page design (brand step 4) ===== */
