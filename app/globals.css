@@ -1416,7 +1416,7 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 }
 .gchart-axis strong { color: var(--text); }
 
-.gchart-scroll { overflow-x: auto; padding-top: 40px; }   /* room for numbers and hover labels */
+.gchart-scroll { overflow-x: auto; overflow-y: hidden; padding-top: 40px; }   /* scroll sideways only; room for numbers and hover labels */
 .gchart-groups { list-style: none; margin: 0; padding: 0; display: flex; min-width: min-content; }
 .gchart-group { flex: 1 0 auto; padding: 0 14px; }
 
@@ -1501,3 +1501,34 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 
 /* Categories: the "move documents" control fits in the table row */
 .inline-form select { width: auto; padding: 8px 10px; }
+
+/* ===== Rankings: Compare countries ===== */
+.cmp-picker { border: 0; margin: 16px 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.cmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.cmp-chip:hover { border-color: var(--rust); }
+.cmp-chip[aria-pressed="true"] { background: var(--cream-dark); border: 2px solid var(--rust); padding: 7px 13px; }
+.cmp-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+.cmp-swatch { width: 12px; height: 12px; display: inline-block; border: 1px solid #B9B0A2; }
+.cmp-hint { margin: 0 0 20px; }
+.cmp-group { flex: 1 0 140px; }                         /* one group per area: room for 4 bars */
+.cmp-group.is-overall { background: var(--cream); }     /* the overall average, set apart */
+.cmp-slot { width: 26px; }
+.cmp-caption .link-button { font-weight: 700; }
+
+/* ===== Admin ranking form: overall level worked out automatically ===== */
+.overall-calc { background: var(--cream-dark); padding: 16px 18px; margin: 8px 0 20px; }
+.overall-calc-label { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+.overall-calc-value { margin: 0 0 6px; font-size: 18px; }
+.overall-calc-value strong { color: var(--rust); }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { averageLevel, levelFromAverage } from "@/lib/ranking";
 
 function friendly(error) {
   return error.code === "23505"
@@ -19,7 +20,6 @@ export async function saveAssessment(formData) {
   const status = formData.get("intent") === "publish" ? "published" : "draft";
   const countryId = formData.get("country_id");
   const round = formData.get("round_label")?.trim();
-  const overall = formData.get("overall_level") || null;
 
   if (!countryId || !round) return { error: "Choose a country and enter the assessment round." };
 
@@ -33,16 +33,20 @@ export async function saveAssessment(formData) {
     }))
     .filter((s) => s.level);
 
-  // D-02 rule: only publish when every area + overall level is filled in
-  if (status === "published" && (scores.length < areas.length || !overall)) {
-    return { error: "To publish, set a level for all five thematic areas and an overall level. Or save as draft." };
+  // Overall = average of the area levels, rounded to the nearest level (see lib/ranking.js).
+  // Worked out here too, so the saved value always matches the areas.
+  const overall = levelFromAverage(averageLevel(scores.map((s) => s.level)));
+
+  // D-02 rule: only publish when every area has a level
+  if (status === "published" && scores.length < areas.length) {
+    return { error: "To publish, set a level for all five thematic areas. Or save as draft." };
   }
 
   const row = {
     country_id: Number(countryId),
     round_label: round,
     assessed_on: formData.get("assessed_on") || null,
-    overall_level: overall ? Number(overall) : null,
+    overall_level: overall,
     summary: formData.get("summary")?.trim() || null,
     status,
     updated_at: new Date().toISOString(),
@@ -81,18 +85,21 @@ export async function setAssessmentStatus(formData) {
   const status = formData.get("status") === "published" ? "published" : "draft";
   const supabase = await createClient();
 
+  const update = { status, updated_at: new Date().toISOString() };
+
   if (status === "published") {
-    const [{ data: a }, { count: areaCount }, { count: scoreCount }] = await Promise.all([
-      supabase.from("assessments").select("overall_level").eq("id", id).single(),
+    const [{ count: areaCount }, { data: areaScores }] = await Promise.all([
       supabase.from("thematic_areas").select("*", { count: "exact", head: true }),
-      supabase.from("assessment_scores").select("*", { count: "exact", head: true }).eq("assessment_id", id),
+      supabase.from("assessment_scores").select("level").eq("assessment_id", id),
     ]);
-    if (!a?.overall_level || scoreCount < areaCount) {
-      redirect(`/admin/rankings?error=${encodeURIComponent("Fill in all five areas and the overall level before publishing.")}`);
+    if ((areaScores ?? []).length < areaCount) {
+      redirect(`/admin/rankings?error=${encodeURIComponent("Fill in all five thematic areas before publishing.")}`);
     }
+    // Make sure the overall matches the areas before it goes public
+    update.overall_level = levelFromAverage(averageLevel(areaScores.map((s) => s.level)));
   }
 
-  await supabase.from("assessments").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+  await supabase.from("assessments").update(update).eq("id", id);
   revalidatePath("/", "layout");
   redirect(`/admin/rankings?saved=${status}`);
 }

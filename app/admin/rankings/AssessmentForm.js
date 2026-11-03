@@ -3,12 +3,22 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { saveAssessment } from "./actions";
+import { averageLevel, levelFromAverage } from "@/lib/ranking";
 
 export default function AssessmentForm({ countries, areas, levels, initial }) {
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const intentRef = useRef("draft"); // which button was clicked
   const scores = Object.fromEntries((initial?.assessment_scores ?? []).map((s) => [s.area_id, s]));
+
+  // The level picked for each area, kept up to date so the overall works itself out (like a spreadsheet formula)
+  const [areaLevels, setAreaLevels] = useState(() =>
+    Object.fromEntries(areas.map((a) => [a.id, scores[a.id]?.level ?? ""]))
+  );
+  const picked = areas.map((a) => Number(areaLevels[a.id])).filter((n) => n > 0);
+  const avg = averageLevel(picked);
+  const overall = levelFromAverage(avg);
+  const levelName = Object.fromEntries(levels.map((l) => [l.level, l.name]));
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -17,13 +27,10 @@ export default function AssessmentForm({ countries, areas, levels, initial }) {
     formData.set("intent", intentRef.current);
 
     // Check before sending, so nothing typed is lost
-    if (intentRef.current === "publish") {
-      const missing = areas.some((a) => !formData.get(`level_${a.id}`)) || !formData.get("overall_level");
-      if (missing) {
-        setError("To publish, set a level for all five thematic areas and an overall level. Or save as draft.");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
+    if (intentRef.current === "publish" && picked.length < areas.length) {
+      setError("To publish, set a level for all five thematic areas. Or save as draft.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
 
     startTransition(async () => {
@@ -74,7 +81,12 @@ export default function AssessmentForm({ countries, areas, levels, initial }) {
           <div className="field-row">
             <div>
               <label htmlFor={`level_${a.id}`}>Level</label>
-              <select id={`level_${a.id}`} name={`level_${a.id}`} defaultValue={scores[a.id]?.level ?? ""}>
+              <select
+                id={`level_${a.id}`}
+                name={`level_${a.id}`}
+                value={areaLevels[a.id]}
+                onChange={(e) => setAreaLevels({ ...areaLevels, [a.id]: e.target.value })}
+              >
                 {levelOptions}
               </select>
             </div>
@@ -86,12 +98,23 @@ export default function AssessmentForm({ countries, areas, levels, initial }) {
         </fieldset>
       ))}
 
+      {/* Overall: worked out automatically from the areas above. It can't be typed. */}
       <h2>Overall</h2>
-      <label htmlFor="overall_level">Overall maturity level</label>
-      <select id="overall_level" name="overall_level" defaultValue={initial?.overall_level ?? ""}>
-        {levelOptions}
-      </select>
-      <p className="muted small">Use the overall level from VillageReach&apos;s assessment matrix.</p>
+      <div className="overall-calc" aria-live="polite">
+        <p className="overall-calc-label">Overall maturity level (calculated)</p>
+        {overall ? (
+          <p className="overall-calc-value">
+            <strong>Level {overall} · {levelName[overall]}</strong>
+            <span className="muted"> (average {avg.toFixed(1)} of {picked.length} {picked.length === 1 ? "area" : "areas"})</span>
+          </p>
+        ) : (
+          <p className="overall-calc-value muted">Set the thematic area levels above.</p>
+        )}
+        <p className="muted small">
+          The average of the thematic area levels, rounded to the nearest level. It updates as you choose.
+          {picked.length > 0 && picked.length < areas.length && " All five areas are needed to publish."}
+        </p>
+      </div>
 
       <label htmlFor="summary">Summary (optional)</label>
       <textarea id="summary" name="summary" defaultValue={initial?.summary ?? ""} />
