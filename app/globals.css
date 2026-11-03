@@ -1532,3 +1532,53 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 .overall-calc-label { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
 .overall-calc-value { margin: 0 0 6px; font-size: 18px; }
 .overall-calc-value strong { color: var(--rust); }
+
+/* ===== Home: tile map of Africa ===== */
+.band-intro { margin: 0 0 24px; max-width: 640px; }
+.amap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.amap-board { flex: 1 1 560px; min-width: 0; background: var(--white); border: 1px solid var(--border); padding: 20px; }
+.amap-grid {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 4px;
+  max-width: 660px;
+  margin: 0 auto;
+}
+.amap-tile {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid var(--white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.amap-tile:hover { filter: brightness(0.92); }
+.amap-tile[aria-pressed="true"] { outline: 3px solid var(--gold); outline-offset: -3px; }
+
+/* Level colours (light to dark teal) and "not assessed" */
+.amap-l1 { background: #D4E7EC; color: var(--text); border-color: #B8D3DA; }
+.amap-l2 { background: #8FC0CC; color: var(--text); }
+.amap-l3 { background: #2D7487; color: var(--white); }
+.amap-l4 { background: #0B4454; color: var(--white); }
+.amap-none { background: #EFE9DF; color: #4E636B; }
+
+.amap-note { text-align: center; margin: 14px 0 0; }
+.amap-side { flex: 1 1 280px; display: flex; flex-direction: column; gap: 16px; }
+.amap-box { background: var(--white); border: 1px solid var(--border); padding: 20px; }
+.amap-name { margin: 4px 0 10px; font-size: 24px; color: var(--rust); }
+.amap-status { display: flex; align-items: center; gap: 8px; font-weight: 600; margin: 0 0 8px; }
+.amap-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid #B8D3DA; }
+.amap-legend { list-style: none; margin: 8px 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.amap-legend li { display: flex; align-items: center; gap: 10px; }
+.amap-legend-name { flex: 1; font-weight: 600; }
+.amap-key { width: 22px; height: 22px; display: inline-block; border: 1px solid #D1C9C1; }
+
+@media (max-width: 600px) {
+  .amap-board { padding: 10px; }
+  .amap-grid { gap: 2px; }
+  .amap-tile { font-size: 9px; }
+}

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getContent } from "@/lib/content";
 import { SECTIONS } from "@/lib/study";
-import LevelPill from "@/components/LevelPill";
 import IconDisc from "@/components/IconDisc";
+import AfricaMap from "@/components/AfricaMap";
 
 // Brand headline style: light text with the key words in bold.
 // Bold = everything after the last comma (or the last two words if there is no comma).
@@ -64,9 +64,13 @@ export default async function Home() {
       latestLevel.set(a.country_id, a.overall_level);
     }
   });
-  const perLevel = (levels ?? []).map((l) => ({
-    ...l,
-    count: [...latestLevel.values()].filter((v) => v === l.level).length,
+  // For the map: each visible country with its latest level and number of documents
+  const levelName = Object.fromEntries((levels ?? []).map((l) => [l.level, l.name]));
+  const mapCountries = countryList.map((c) => ({
+    iso: c.iso_code.toUpperCase(),
+    name: c.name,
+    level: latestLevel.get(c.id) ?? null,
+    docs: counts[c.id] || 0,
   }));
 
   const [titleLead, titleKey] = splitHeadline(content.home_title);
@@ -102,29 +106,8 @@ export default async function Home() {
           <p className="eyebrow">Continental analysis</p>
           <h2 className="display"><strong>Maturity</strong> across Africa</h2>
 
-          {latestLevel.size === 0 ? (
-            <div className="card notice">
-              <p><strong>Assessment in progress.</strong></p>
-              <p className="muted">
-                Maturity rankings will appear here once the GTCOP assessment results are published.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="stats level-summary">
-                {perLevel.map((l) => (
-                  <div key={l.level} className="card stat">
-                    <LevelPill level={l.level} name={l.name} />
-                    <p className="stat-number">{l.count}</p>
-                    <p className="stat-label">{l.count === 1 ? "country" : "countries"}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="band-link">
-                <Link href="/rankings" className="arrow-link">See the full rankings →</Link>
-              </p>
-            </>
-          )}
+          <p className="band-intro">Each country is coloured by its overall maturity level. Click a country to see more.</p>
+          <AfricaMap countries={mapCountries} levels={levelName} />
         </div>
       </section>
 
