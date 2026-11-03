@@ -3,24 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AFRICAN_COUNTRIES } from "@/lib/africa";
+import { MAP_WIDTH, MAP_HEIGHT, LABEL_OFFSETS, ISLANDS, SHAPES } from "@/lib/africa-shapes";
 
-// Tile map of Africa: one square per country, placed roughly where it sits on the continent.
-// Every country is the same size, so small countries are as easy to see and click as big ones.
-// Colour = overall maturity level. Every square also says its level in words (screen readers),
-// and "View as a list" links to the Countries page.
-
-// [ISO code, row, column]
-const TILES = [
-  ["MA", 0, 2], ["DZ", 0, 3], ["TN", 0, 4], ["LY", 0, 5], ["EG", 0, 6],
-  ["CV", 1, 0], ["MR", 1, 2], ["ML", 1, 3], ["NE", 1, 4], ["TD", 1, 5], ["SD", 1, 6], ["ER", 1, 7],
-  ["SN", 2, 1], ["GM", 2, 2], ["BF", 2, 3], ["BJ", 2, 4], ["NG", 2, 5], ["SS", 2, 6], ["ET", 2, 7], ["DJ", 2, 8],
-  ["GW", 3, 0], ["GN", 3, 1], ["CI", 3, 2], ["GH", 3, 3], ["TG", 3, 4], ["CM", 3, 5], ["CF", 3, 6], ["SO", 3, 8],
-  ["SL", 4, 0], ["LR", 4, 1], ["ST", 4, 3], ["GQ", 4, 4], ["GA", 4, 5], ["CD", 4, 6], ["UG", 4, 7], ["KE", 4, 8], ["SC", 4, 10],
-  ["CG", 5, 5], ["RW", 5, 6], ["BI", 5, 7], ["TZ", 5, 8],
-  ["AO", 6, 5], ["ZM", 6, 6], ["MW", 6, 7], ["MZ", 6, 8], ["KM", 6, 9],
-  ["NA", 7, 5], ["BW", 7, 6], ["ZW", 7, 7], ["MG", 7, 9], ["MU", 7, 10],
-  ["ZA", 8, 6], ["LS", 8, 7], ["SZ", 8, 8],
-];
+// Map of Africa: each country coloured by its overall maturity level, labelled with its code (NG, CM…).
+// Click a country (or Tab to it and press Enter) to see it in the panel.
+// Every country also says its level in words for screen readers, and "View as a list" links to the Countries page.
 
 const NAMES = Object.fromEntries(AFRICAN_COUNTRIES.map((c) => [c.iso, c.name]));
 
@@ -38,36 +25,75 @@ export default function AfricaMap({ countries, levels }) {
     if (!c) return "Not part of the assessment yet";
     return c.level ? `Level ${c.level} · ${levels[c.level] ?? ""}` : "Assessment in progress";
   };
+  const levelClass = (iso) => (byIso[iso]?.level ? `amap-l${byIso[iso].level}` : "amap-none");
+  const onKey = (iso) => (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setSelected(iso);
+    }
+  };
 
   const sel = selected ? byIso[selected] : null;
   const counts = [4, 3, 2, 1].map((l) => ({ level: l, count: countries.filter((c) => c.level === l).length }));
-  const notAssessed = TILES.length - countries.filter((c) => c.level).length;
+  const notAssessed = 54 - countries.filter((c) => c.level).length;
 
   return (
     <div className="amap">
       <div className="amap-board">
-        <div className="amap-grid" role="group" aria-label="Map of Africa, one square per country">
-          {TILES.map(([iso, row, col]) => {
-            const c = byIso[iso];
-            const name = c?.name ?? NAMES[iso] ?? iso;
-            return (
-              <button
-                key={iso}
-                type="button"
-                className={`amap-tile ${c?.level ? `amap-l${c.level}` : "amap-none"}`}
-                style={{ gridRow: row + 1, gridColumn: col + 1 }}
-                aria-pressed={selected === iso}
-                aria-label={`${name}: ${statusOf(iso)}`}
-                onClick={() => setSelected(iso)}
+        <svg
+          className="amap-svg"
+          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+          role="group"
+          aria-label="Map of Africa. Each country is coloured by its overall maturity level."
+        >
+          {/* Country shapes */}
+          {SHAPES.map((s) =>
+            s.iso === "EH" ? (
+              <path key={s.iso} d={s.d} className="amap-shape amap-other" aria-hidden="true" />
+            ) : (
+              <g
+                key={s.iso}
+                className={`amap-country ${selected === s.iso ? "is-selected" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selected === s.iso}
+                aria-label={`${byIso[s.iso]?.name ?? NAMES[s.iso] ?? s.iso}: ${statusOf(s.iso)}`}
+                onClick={() => setSelected(s.iso)}
+                onKeyDown={onKey(s.iso)}
               >
-                {iso}
-              </button>
+                <path d={s.d} className={`amap-shape ${levelClass(s.iso)}`} />
+                {ISLANDS.includes(s.iso) && (
+                  <circle cx={s.lx} cy={s.ly} r="7" className={`amap-shape amap-island ${levelClass(s.iso)}`} />
+                )}
+              </g>
+            )
+          )}
+
+          {/* Country codes (NG, CM…), on top of the shapes */}
+          {SHAPES.filter((s) => s.iso !== "EH").map((s) => {
+            const off = LABEL_OFFSETS[s.iso];
+            const dark = ["amap-l3", "amap-l4"].includes(levelClass(s.iso));
+            if (!off) {
+              return (
+                <text key={s.iso} x={s.lx} y={s.ly} className={`amap-label ${dark ? "on-dark" : ""}`} aria-hidden="true"
+                  onClick={() => setSelected(s.iso)}>
+                  {s.iso}
+                </text>
+              );
+            }
+            // Small countries: label outside, with a short line pointing to the country
+            const [dx, dy] = off;
+            return (
+              <g key={s.iso} aria-hidden="true" onClick={() => setSelected(s.iso)} className="amap-callout">
+                <line x1={s.lx} y1={s.ly} x2={s.lx + dx} y2={s.ly + dy} />
+                {!ISLANDS.includes(s.iso) && <circle cx={s.lx} cy={s.ly} r="2.5" />}
+                <text x={s.lx + dx} y={s.ly + dy} className="amap-label amap-label-small">{s.iso}</text>
+              </g>
             );
           })}
-        </div>
+        </svg>
         <p className="muted small amap-note">
-          Each square is one country, placed roughly where it sits on the map. Grey means not assessed yet.{" "}
-          <Link href="/countries">View as a list</Link>
+          Grey means not assessed yet. <Link href="/countries">View as a list</Link>
         </p>
       </div>
 
@@ -79,7 +105,7 @@ export default function AfricaMap({ countries, levels }) {
             <>
               <h3 className="amap-name">{sel?.name ?? NAMES[selected] ?? selected}</h3>
               <p className="amap-status">
-                <span className={`amap-dot ${sel?.level ? `amap-l${sel.level}` : "amap-none"}`} aria-hidden="true" />
+                <span className={`amap-dot ${levelClass(selected)}`} aria-hidden="true" />
                 {statusOf(selected)}
               </p>
               {sel && (
