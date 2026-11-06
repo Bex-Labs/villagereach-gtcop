@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CopyLinkButton from "@/components/CopyLinkButton";
-import CountryRanking from "@/components/CountryRanking";
+import CountryMaturity from "@/components/CountryMaturity";
 import CountryRecommendations from "@/components/CountryRecommendations";
 
 // Page title, e.g. "Kenya | GTCOP Assessment" (also used in link previews, C-06)
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }) {
     .from("countries").select("name").eq("iso_code", code.toUpperCase()).eq("is_visible", true).single();
   return {
     title: data ? `${data.name} | GTCOP Assessment` : "Country not found",
-    description: data ? `Telehealth policy documents and maturity ranking for ${data.name}.` : undefined,
+    description: data ? `Telehealth policy documents and maturity profile for ${data.name}.` : undefined,
   };
 }
 
@@ -77,14 +77,14 @@ export default async function CountryProfilePage({ params, searchParams }) {
         <CopyLinkButton />
       </section>
 
-      {/* Maturity ranking + history (D-03, D-04) */}
-      <CountryRanking countryId={country.id} />
+      {/* Maturity profile + earlier rounds (VillageReach framework) */}
+      <CountryMaturity countryId={country.id} countryCode={country.iso_code} />
 
       {/* Country-specific recommendations (E-03) */}
       <CountryRecommendations countryId={country.id} />
 
       {/* Documents grouped by category */}
-      <section className="card section-card">
+      <section className="card section-card" id="documents">
         <p className="eyebrow">National repository</p>
         <h2>Documents</h2>
 

@@ -13,7 +13,7 @@ export default function Footer() {
         </p>
         <nav aria-label="Footer">
           <Link href="/countries">Countries</Link>
-          <Link href="/rankings">Rankings</Link>
+          <Link href="/maturity">Maturity</Link>
           <Link href="/study-materials">Study materials</Link>
           <Link href="/about">About</Link>
         </nav>

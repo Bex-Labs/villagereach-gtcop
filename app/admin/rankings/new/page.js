@@ -2,21 +2,23 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AssessmentForm from "../AssessmentForm";
 
-export const metadata = { title: "Add ranking | Admin" };
+export const metadata = { title: "Add maturity result | Admin" };
 
-export default async function NewRankingPage() {
+export default async function NewResultPage() {
   const supabase = await createClient();
-  const [{ data: countries }, { data: areas }, { data: levels }] = await Promise.all([
+  const [{ data: countries }, { data: units }] = await Promise.all([
     supabase.from("countries").select("id, name").order("name"),
-    supabase.from("thematic_areas").select("id, name").order("sort_order"),
-    supabase.from("maturity_levels").select("level, name").order("level"),
+    supabase
+      .from("thematic_areas")
+      .select("id, code, domain_no, domain_name, name, ts_share, is_critical")
+      .order("sort_order"),
   ]);
 
   return (
     <>
-      <p className="breadcrumbs"><Link href="/admin/rankings">Rankings</Link> / Add</p>
-      <h1>Add a country ranking</h1>
-      <AssessmentForm countries={countries ?? []} areas={areas ?? []} levels={levels ?? []} />
+      <p className="breadcrumbs"><Link href="/admin/rankings">Maturity results</Link> / Add</p>
+      <h1>Add a country result</h1>
+      <AssessmentForm countries={countries ?? []} units={units ?? []} />
     </>
   );
 }

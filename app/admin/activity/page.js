@@ -6,14 +6,17 @@ export const metadata = { title: "Activity log | GTCOP Admin" };
 // Friendly names for each kind of item
 const TYPES = {
   documents: "Document",
-  assessments: "Ranking",
+  assessments: "Maturity result",
+  assessment_scores: "Result score",
+  assessment_gaps: "Result gap",
   study_materials: "Study material",
   profiles: "User",
   countries: "Country",
   categories: "Category",
-  thematic_areas: "Thematic area",
+  thematic_areas: "Scored part",
   maturity_levels: "Maturity level",
   site_content: "Site text",
+  import_batches: "CSV import",
 };
 const PER_PAGE = 50;
 
@@ -23,6 +26,9 @@ const show = (v) => {
   const text = typeof v === "object" ? JSON.stringify(v) : String(v);
   return text.length > 120 ? `${text.slice(0, 120)}…` : text;
 };
+
+// True when a logged value is an edit ({ from, to }) rather than a plain old value
+const isChange = (v) => v !== null && typeof v === "object" && !Array.isArray(v) && ("from" in v || "to" in v);
 
 const formatWhen = (d) =>
   new Date(d).toLocaleString("en-GB", {
@@ -50,7 +56,7 @@ export default async function ActivityPage({ searchParams }) {
   return (
     <>
       <h1>Activity log</h1>
-      <p className="muted">Every change to documents, rankings, study materials, users and settings: who, what and when.</p>
+      <p className="muted">Every change to documents, maturity results, study materials, users and settings: who, what and when.</p>
 
       <nav className="filter-tabs" aria-label="Filter by type">
         <Link href="/admin/activity" className={!type ? "active" : ""}>All</Link>
@@ -85,7 +91,9 @@ export default async function ActivityPage({ searchParams }) {
                         <ul className="change-list">
                           {Object.entries(r.changes).map(([field, v]) => (
                             <li key={field}>
-                              <strong>{field}</strong>: {show(v.from)} → {show(v.to)}
+                              {/* An edit is saved as { from, to }; a deleted item keeps its old values as they were */}
+                              <strong>{field}</strong>:{" "}
+                              {isChange(v) ? <>{show(v.from)} → {show(v.to)}</> : show(v)}
                             </li>
                           ))}
                         </ul>

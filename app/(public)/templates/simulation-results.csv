@@ -1,0 +1,24 @@
+country_code,round,assessed_on,provisional,typology,completeness,score_low,score_high,commentary,1,2,3,4,5a,5b,6a,6b,7a,7b,8a,8b,9,10,11
+BJ,SIM,2026-08-04,yes,Actively implemented but insufficiently regulated,5,,,Simulated result for testing. Not real data.,2,P2,1,P2,1,1,1,1,2,2,3,NE,1,1,2
+BF,SIM,2026-09-20,yes,Regulation-heavy but implementation-light,7,,,Simulated result for testing. Not real data.,2,3,3,2,3,P2,2,2,1,1,3,3,P2,3,2
+CV,SIM,2026-08-03,yes,Policy-recognised but operationally weak,4,,,Simulated result for testing. Not real data.,1,2,3,2,1,1,1,1,2,1,2,3,2,2,3
+CI,SIM,2026-07-03,yes,Actively implemented but insufficiently regulated,7,,,Simulated result for testing. Not real data.,0,0,1,0,2,2,2,1,1,1,0,1,1,1,2
+GM,SIM,2026-08-26,yes,Policy-recognised but operationally weak,6,,,Simulated result for testing. Not real data.,1,3,2,3,2,2,3,3,3,3,3,3,2,2,3
+GH,SIM,2026-09-03,yes,Digitally enabled but telehealth-light,6,,,Simulated result for testing. Not real data.,3,2,2,3,4,P3,3,3,3,NE,2,3,2,2,2
+GN,SIM,2026-10-27,yes,Actively implemented but insufficiently regulated,7,,,Simulated result for testing. Not real data.,0,2,2,2,1,0,2,2,2,1,1,2,1,2,1
+ML,SIM,2026-08-23,yes,Policy-recognised but operationally weak,7,,,Simulated result for testing. Not real data.,0,NE,0,1,1,1,0,0,2,1,2,1,1,1,1
+NG,SIM,2026-10-11,yes,Policy-recognised but operationally weak,7,,,Simulated result for testing. Not real data.,1,2,1,3,2,1,2,1,1,1,3,2,1,2,2
+SN,SIM,2026-09-18,yes,Implementation-oriented,5,,,Simulated result for testing. Not real data.,3,NE,3,3,4,2,3,2,P3,3,P3,4,2,2,3
+TG,SIM,2026-08-13,yes,Implementation-oriented,3,,,Simulated result for testing. Not real data.,2,4,3,4,4,2,NE,4,3,4,4,4,3,3,4
+ET,SIM,2026-08-17,yes,Policy-recognised but operationally weak,3,,,Simulated result for testing. Not real data.,2,P2,2,4,3,NE,2,NE,2,2,NE,2,2,P2,3
+KE,SIM,2026-08-03,yes,Policy-recognised but operationally weak,3,,,Simulated result for testing. Not real data.,2,1,3,3,3,3,2,1,3,2,2,3,3,NE,3
+MG,SIM,2026-07-20,yes,Institutionalised and adaptive,3,,,Simulated result for testing. Not real data.,3,P3,NE,3,3,P3,4,3,3,4,4,4,4,P3,3
+RW,SIM,2026-09-12,yes,Policy-recognised but operationally weak,7,,,Simulated result for testing. Not real data.,3,NE,P3,3,3,3,3,4,4,2,3,3,2,2,2
+TZ,SIM,2026-07-27,yes,Policy-recognised but operationally weak,8,,,Simulated result for testing. Not real data.,3,1,2,2,1,1,1,3,1,1,P2,3,P2,2,1
+BW,SIM,2026-07-06,yes,Digitally enabled but telehealth-light,4,,,Simulated result for testing. Not real data.,3,2,NE,2,2,1,2,1,2,2,2,1,2,1,2
+MW,SIM,2026-08-13,yes,Implementation-oriented,8,,,Simulated result for testing. Not real data.,2,4,2,2,2,2,4,3,3,3,P3,4,3,4,3
+NA,SIM,2026-09-17,yes,Policy-recognised but operationally weak,8,,,Simulated result for testing. Not real data.,2,2,0,2,1,2,0,0,2,2,P1,0,1,NE,2
+ZA,SIM,2026-09-22,yes,Policy-recognised but operationally weak,4,,,Simulated result for testing. Not real data.,1,2,NE,3,1,1,2,NE,2,P2,3,1,1,2,2
+ZM,SIM,2026-08-11,yes,Actively implemented but insufficiently regulated,4,,,Simulated result for testing. Not real data.,0,0,0,0,1,1,0,2,P1,NE,1,0,2,0,P1
+CM,SIM,2026-07-15,yes,Policy-recognised but operationally weak,3,,,Simulated result for testing. Not real data.,2,2,NE,2,2,2,3,2,NE,2,2,3,NE,3,1
+CD,SIM,2026-08-11,yes,Policy-recognised but operationally weak,6,,,Simulated result for testing. Not real data.,3,NE,2,1,2,3,P2,1,2,2,3,2,NE,1,1

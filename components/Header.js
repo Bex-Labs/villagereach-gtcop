@@ -9,7 +9,7 @@ import SignOutButton from "@/components/SignOutButton";
 const links = [
   { href: "/", label: "Home" },
   { href: "/countries", label: "Countries" },
-  { href: "/rankings", label: "Rankings" },
+  { href: "/maturity", label: "Maturity" },
   { href: "/study-materials", label: "Study materials" },
   { href: "/about", label: "About" },
 ];

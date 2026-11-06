@@ -3,15 +3,40 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { averageLevel, levelFromAverage } from "@/lib/ranking";
+import { calculateResult, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES } from "@/lib/maturity";
+
+const UNIT_FIELDS = "id, code, domain_no, ts_share, is_critical";
 
 function friendly(error) {
   return error.code === "23505"
-    ? "This country already has a ranking for that round. Edit the existing one instead."
+    ? "This country already has a result for that round. Edit the existing one instead."
     : "Could not save. Please try again.";
 }
 
-// Create or update a ranking (used by the form)
+// A number between 0 and 4 from the form, or null
+function scoreNumber(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 && n <= MAX_SCORE ? Math.round(n * 100) / 100 : NaN;
+}
+
+// The results fields worked out from a set of saved scores
+function resultFields(units, savedScores) {
+  const codeOf = Object.fromEntries(units.map((u) => [u.id, u.code]));
+  const scores = Object.fromEntries(
+    savedScores.map((s) => [codeOf[s.area_id], { status: s.score_status, score: s.score }])
+  );
+  const r = calculateResult(units, scores);
+  return {
+    overall_score: r.overall,
+    overall_level: r.level,
+    level_capped: r.capped,
+    ts_score: r.tsScore,
+    sr_score: r.srScore,
+  };
+}
+
+// Create or update a country's result (used by the form)
 export async function saveAssessment(formData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -20,36 +45,76 @@ export async function saveAssessment(formData) {
   const status = formData.get("intent") === "publish" ? "published" : "draft";
   const countryId = formData.get("country_id");
   const round = formData.get("round_label")?.trim();
-
   if (!countryId || !round) return { error: "Choose a country and enter the assessment round." };
 
-  // Collect the level chosen for each thematic area
-  const { data: areas } = await supabase.from("thematic_areas").select("id");
-  const scores = (areas ?? [])
-    .map((a) => ({
-      area_id: a.id,
-      level: Number(formData.get(`level_${a.id}`)) || null,
-      note: formData.get(`note_${a.id}`)?.trim() || null,
-    }))
-    .filter((s) => s.level);
+  // The 15 scored parts
+  const { data: units } = await supabase.from("thematic_areas").select(UNIT_FIELDS).order("sort_order");
 
-  // Overall = average of the area levels, rounded to the nearest level (see lib/ranking.js).
-  // Worked out here too, so the saved value always matches the areas.
-  const overall = levelFromAverage(averageLevel(scores.map((s) => s.level)));
+  // Collect each part's score (0–4), NE or P
+  const scores = [];
+  for (const u of units ?? []) {
+    const v = formData.get(`score_${u.id}`) ?? "";
+    if (v === "") continue;
+    const isFlag = v === "NE" || v === "P";
+    const n = isFlag ? null : Number(v);
+    if (!isFlag && !(Number.isInteger(n) && n >= 0 && n <= MAX_SCORE)) {
+      return { error: `Part ${u.code}: choose a score from 0 to 4, NE or P.` };
+    }
+    const prov = formData.get(`prov_${u.id}`);
+    const conf = formData.get(`conf_${u.id}`);
+    scores.push({
+      area_id: u.id,
+      score: n,
+      score_status: isFlag ? v : "scored",
+      provisional_score: v === "P" && prov !== null && prov !== "" ? Number(prov) : null,
+      confidence: ["high", "moderate", "low"].includes(conf) ? conf : null,
+      note: formData.get(`note_${u.id}`)?.trim() || null,
+    });
+  }
 
-  // D-02 rule: only publish when every area has a level
-  if (status === "published" && scores.length < areas.length) {
-    return { error: "To publish, set a level for all five thematic areas. Or save as draft." };
+  // Only publish when every part has a score, NE or P
+  if (status === "published" && scores.length < (units ?? []).length) {
+    return { error: `To publish, give all ${units.length} parts a score (or NE / P). Or save as draft.` };
+  }
+
+  // Optional profile details
+  const low = scoreNumber(formData.get("score_low"));
+  const high = scoreNumber(formData.get("score_high"));
+  if (Number.isNaN(low) || Number.isNaN(high)) return { error: "The score range must be numbers from 0 to 4." };
+  if (low !== null && high !== null && low > high) return { error: "The low end of the score range is above the high end." };
+  const typology = formData.get("typology");
+  const completeness = formData.get("completeness");
+
+  // Key gaps (sent from the form as a list)
+  let gaps = [];
+  try {
+    gaps = JSON.parse(formData.get("gaps") || "[]")
+      .filter((g) => g.function_name?.trim())
+      .map((g, i) => ({
+        function_name: g.function_name.trim().slice(0, 300),
+        gap_type: GAP_TYPES.includes(g.gap_type) ? g.gap_type : GAP_TYPES[1],
+        status: GAP_STATUSES.includes(g.status) ? g.status : GAP_STATUSES[0],
+        sort_order: i,
+      }));
+  } catch {
+    return { error: "The gaps could not be read. Please try again." };
   }
 
   const row = {
     country_id: Number(countryId),
     round_label: round,
     assessed_on: formData.get("assessed_on") || null,
-    overall_level: overall,
     summary: formData.get("summary")?.trim() || null,
+    is_provisional: formData.get("is_provisional") === "on",
+    score_low: low,
+    score_high: high,
+    typology: TYPOLOGIES.includes(typology) ? typology : null,
+    completeness: completeness !== null && completeness !== "" ? Number(completeness) : null,
     status,
     updated_at: new Date().toISOString(),
+    // Overall score, level and dimension scores: worked out here from the scores,
+    // so what's saved always follows the framework's rules
+    ...resultFields(units ?? [], scores),
   };
 
   let assessmentId = id;
@@ -66,13 +131,20 @@ export async function saveAssessment(formData) {
     assessmentId = data.id;
   }
 
-  // Replace the area levels with what's on the form
+  // Replace the scores and gaps with what's on the form
   await supabase.from("assessment_scores").delete().eq("assessment_id", assessmentId);
   if (scores.length) {
     const { error } = await supabase
       .from("assessment_scores")
       .insert(scores.map((s) => ({ ...s, assessment_id: assessmentId })));
-    if (error) return { error: "The ranking was saved, but the area levels were not. Please try again." };
+    if (error) return { error: "The result was saved, but the scores were not. Please try again." };
+  }
+  await supabase.from("assessment_gaps").delete().eq("assessment_id", assessmentId);
+  if (gaps.length) {
+    const { error } = await supabase
+      .from("assessment_gaps")
+      .insert(gaps.map((g) => ({ ...g, assessment_id: assessmentId })));
+    if (error) return { error: "The result was saved, but the gaps were not. Please try again." };
   }
 
   revalidatePath("/", "layout");
@@ -88,18 +160,34 @@ export async function setAssessmentStatus(formData) {
   const update = { status, updated_at: new Date().toISOString() };
 
   if (status === "published") {
-    const [{ count: areaCount }, { data: areaScores }] = await Promise.all([
-      supabase.from("thematic_areas").select("*", { count: "exact", head: true }),
-      supabase.from("assessment_scores").select("level").eq("assessment_id", id),
+    const [{ data: units }, { data: saved }] = await Promise.all([
+      supabase.from("thematic_areas").select(UNIT_FIELDS),
+      supabase.from("assessment_scores").select("area_id, score, score_status").eq("assessment_id", id),
     ]);
-    if ((areaScores ?? []).length < areaCount) {
-      redirect(`/admin/rankings?error=${encodeURIComponent("Fill in all five thematic areas before publishing.")}`);
+    if ((saved ?? []).length < (units ?? []).length) {
+      redirect(`/admin/rankings?error=${encodeURIComponent("Give every part a score (or NE / P) before publishing.")}`);
     }
-    // Make sure the overall matches the areas before it goes public
-    update.overall_level = levelFromAverage(averageLevel(areaScores.map((s) => s.level)));
+    // Make sure the results match the scores before they go public
+    Object.assign(update, resultFields(units, saved));
   }
 
   await supabase.from("assessments").update(update).eq("id", id);
   revalidatePath("/", "layout");
   redirect(`/admin/rankings?saved=${status}`);
+}
+
+// Delete a result, with its scores and gaps (they go with it automatically)
+export async function deleteAssessment(formData) {
+  const id = formData.get("id");
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("assessments").delete().eq("id", id).select("id");
+
+  // If nothing was deleted, the database didn't allow it (or it was already gone)
+  if (error || !data?.length) {
+    redirect(`/admin/rankings?error=${encodeURIComponent("Could not delete this result. Please try again.")}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/admin/rankings?saved=deleted");
 }

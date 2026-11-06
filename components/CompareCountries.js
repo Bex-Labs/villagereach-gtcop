@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { MAX_LEVEL } from "@/lib/ranking";
+import { MAX_SCORE } from "@/lib/maturity";
 
-// Compare up to 4 countries, area by area.
+// Compare up to 4 countries, domain by domain (scores 0–4).
 // Each country keeps its own colour in every group (colours checked for colour-blind visitors),
-// the level is written on top of every bar, and screen readers hear every bar in words.
+// the score is written on top of every bar, and screen readers hear every bar in words.
 // The chosen countries are kept in the address (?c=ng,ke) so a comparison can be shared.
 
 const MAX_PICK = 4;
 const COUNTRY_COLOURS = ["#2A78D6", "#1BAF7A", "#EDA100", "#E87BA4"]; // blue, aqua, yellow, pink
 
-export default function CompareCountries({ rows, areas, levels, initial = [] }) {
+// rows: [{ name, code, score, domains: { [domainNo]: score } }]   domains: [{ no, name }]
+export default function CompareCountries({ rows, domains, initial = [] }) {
   const known = new Set(rows.map((r) => r.code));
   const start = initial.filter((c) => known.has(c)).slice(0, MAX_PICK);
   const [picked, setPicked] = useState(start.length ? start : rows.slice(0, 2).map((r) => r.code));
@@ -45,11 +46,13 @@ export default function CompareCountries({ rows, areas, levels, initial = [] }) 
   const colourOf = (code) => COUNTRY_COLOURS[picked.indexOf(code)];
   const chosen = picked.map((code) => rows.find((r) => r.code === code)).filter(Boolean);
 
-  // Groups: the overall average first, then each thematic area
+  // Groups: the overall score first, then each of the 11 domains
   const groups = [
-    { key: "overall", name: "Overall (average)", valueOf: (r) => r.avg, text: (v) => v.toFixed(1) },
-    ...areas.map((a) => ({ key: a.id, name: a.name, valueOf: (r) => r.scores[a.id], text: (v) => String(v) })),
+    { key: "overall", name: "Overall score", valueOf: (r) => r.score, decimals: 2 },
+    ...domains.map((d) => ({ key: d.no, name: `${d.no}. ${d.name}`, valueOf: (r) => r.domains?.[d.no] })),
   ];
+  const text = (v, decimals = 1) => (decimals === 2 ? v.toFixed(2) : Number.isInteger(v) ? String(v) : v.toFixed(1));
+  const SCALE = { 4: "Fully", 3: "Substantively", 2: "Partially", 1: "Mentioned" };
 
   const hint =
     picked.length === 0
@@ -97,8 +100,8 @@ export default function CompareCountries({ rows, areas, levels, initial = [] }) 
           <div className="gchart-body">
             <div className="gchart-axis" aria-hidden="true">
               {[4, 3, 2, 1].map((l) => (
-                <span key={l} style={{ bottom: `${(l / MAX_LEVEL) * 100}%` }}>
-                  <strong>{l}</strong> {levels[l]}
+                <span key={l} style={{ bottom: `${(l / MAX_SCORE) * 100}%` }}>
+                  <strong>{l}</strong> {SCALE[l]}
                 </span>
               ))}
             </div>
@@ -113,14 +116,14 @@ export default function CompareCountries({ rows, areas, levels, initial = [] }) 
                         return (
                           <li key={r.code} className="gchart-slot cmp-slot">
                             {v != null ? (
-                              <span className="gchart-bar" style={{ height: `${(v / MAX_LEVEL) * 100}%`, background: colourOf(r.code) }}>
-                                <span className="gchart-value" aria-hidden="true">{g.text(v)}</span>
+                              <span className="gchart-bar" style={{ height: `${(v / MAX_SCORE) * 100}%`, background: colourOf(r.code) }}>
+                                <span className="gchart-value" aria-hidden="true">{text(v, g.decimals)}</span>
                               </span>
                             ) : (
                               <span className="gchart-none" aria-hidden="true">–</span>
                             )}
                             <span className="visually-hidden">
-                              {r.name}, {g.name}: {v != null ? g.text(v) : "not assessed"}
+                              {r.name}, {g.name}: {v != null ? text(v, g.decimals) : "not scored"}
                             </span>
                           </li>
                         );
@@ -134,7 +137,7 @@ export default function CompareCountries({ rows, areas, levels, initial = [] }) 
           </div>
 
           <figcaption className="muted small cmp-caption">
-            Each country keeps its colour in every group. Overall is the average of the five thematic areas.{" "}
+            Each country keeps its colour in every group. Scores 0–4; a domain with two parts shows their average.{" "}
             <button type="button" className="link-button" onClick={copyLink}>
               {copied ? "Link copied ✓" : "Copy link to this comparison"}
             </button>

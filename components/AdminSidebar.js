@@ -11,7 +11,7 @@ const ADMIN_ITEMS = [
   { href: "/admin/documents/new", label: "Upload document" },
   { href: "/admin/countries", label: "Countries" },
   { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/rankings", label: "Rankings" },
+  { href: "/admin/rankings", label: "Maturity results" },
   { href: "/admin/study-materials", label: "Study materials" },
   { href: "/admin/review", label: "Pending review" },
   { href: "/admin/content", label: "Site content" },
