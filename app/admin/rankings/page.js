@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import LevelPill from "@/components/LevelPill";
 import DeleteResultButton from "@/components/DeleteResultButton";
+import { formatWhen, RESULT_ENTITIES } from "@/lib/activity-text";
 import { setAssessmentStatus } from "./actions";
 
 export const metadata = { title: "Maturity results | Admin" };
@@ -25,6 +26,20 @@ export default async function ResultsPage({ searchParams }) {
     supabase.from("thematic_areas").select("*", { count: "exact", head: true }),
     supabase.from("countries").select("id, name").order("name"),
   ]);
+
+  // Who made the latest change to each result (from the activity log)
+  const ids = (rows ?? []).map((r) => String(r.id));
+  const { data: log } = ids.length
+    ? await supabase
+        .from("activity_log")
+        .select("entity_id, actor_name")
+        .in("entity", RESULT_ENTITIES)
+        .in("entity_id", ids)
+        .order("created_at", { ascending: false })
+        .limit(1000)
+    : { data: [] };
+  const lastBy = {};
+  for (const l of log ?? []) if (!(l.entity_id in lastBy)) lastBy[l.entity_id] = l.actor_name;
 
   const levelName = Object.fromEntries((levels ?? []).map((l) => [l.level, l.name]));
   const publishedIds = new Set((rows ?? []).filter((r) => r.status === "published").map((r) => r.country_id));
@@ -76,7 +91,10 @@ export default async function ResultsPage({ searchParams }) {
                       {r.is_provisional && <span className="badge badge-pending">Provisional</span>}
                       {r.import_batch_id && <span className="badge badge-hidden">Imported</span>}
                     </td>
-                    <td>{new Date(r.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                    <td className="small">
+                      {formatWhen(r.updated_at)}
+                      {lastBy[String(r.id)] && <><br /><span className="muted">by {lastBy[String(r.id)]}</span></>}
+                    </td>
                     <td>
                       <div className="row-actions">
                         <Link href={`/admin/rankings/${r.id}`} className="btn btn-outline">Edit</Link>

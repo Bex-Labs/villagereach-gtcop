@@ -1543,10 +1543,14 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 
 /* Country shapes: level colours (light to dark teal) and "not assessed" */
 .amap-shape { stroke: var(--white); stroke-width: 1; }
-.amap-l1 { fill: #D4E7EC; background: #D4E7EC; }
-.amap-l2 { fill: #8FC0CC; background: #8FC0CC; }
-.amap-l3 { fill: #2D7487; background: #2D7487; }
-.amap-l4 { fill: #0B4454; background: #0B4454; }
+.amap-l1 { fill: #E1EEF1; background: #E1EEF1; }
+.amap-l2 { fill: #A9D0DA; background: #A9D0DA; }
+.amap-l3 { fill: #5E9FB0; background: #5E9FB0; }
+.amap-l4 { fill: #2D7487; background: #2D7487; }
+.amap-l5 { fill: #0B4454; background: #0B4454; }
+.amap-cov-assessed { fill: #2D7487; background: #2D7487; }
+.amap-cov-shared { fill: #A9D0DA; background: #A9D0DA; }
+.amap-cov-none { fill: #EFE9DF; background: #EFE9DF; }
 .amap-none { fill: #EFE9DF; background: #EFE9DF; }
 .amap-other { fill: #F6F3EC; }                         /* Western Sahara: not part of the list */
 .amap-island { stroke: #4E636B; }
@@ -1775,3 +1779,21 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 .import-bad td, .import-bad th { background: #FDF3F1; }
 .import-go { display: flex; flex-direction: column; gap: 6px; }
 .import-go p { margin: 0; }
+
+/* Activity log: plain sentences and one-result filter (Phase 7) */
+.change-sentence { margin: 0 0 4px; }
+.activity-filter-note { margin-bottom: 16px; }
+.last-updated { margin-top: -4px; }
+
+/* Home map: two views (Phase 5) */
+.amap { flex-direction: column; align-items: stretch; }
+.amap-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.amap-views { display: flex; flex-wrap: wrap; }
+.amap-views button {
+  font: inherit; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 9px 14px; border: 1px solid var(--border); background: var(--white); color: var(--text); cursor: pointer;
+}
+.amap-views button + button { border-left: 0; }
+.amap-views button[aria-pressed="true"] { background: #1B3038; border-color: #1B3038; color: var(--white); }
+.amap-views button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.amap-label-small { paint-order: stroke; stroke: var(--white); stroke-width: 4px; stroke-linejoin: round; }

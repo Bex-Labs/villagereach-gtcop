@@ -4,6 +4,7 @@ import { getContent } from "@/lib/content";
 import { SECTIONS } from "@/lib/study";
 import IconDisc from "@/components/IconDisc";
 import AfricaMap from "@/components/AfricaMap";
+import { ROUND1_ASSESSED, COVERAGE_ROUND } from "@/lib/coverage";
 
 // Brand headline style: light text with the key words in bold.
 // Bold = everything after the last comma (or the last two words if there is no comma).
@@ -95,18 +96,20 @@ export default async function Home() {
 
           <div className="hero-actions">
             <Link href="/countries" className="btn btn-primary">Browse countries</Link>
-            <Link href="/rankings" className="btn btn-outline">View rankings</Link>
+            <Link href="/maturity" className="btn btn-outline">View maturity results</Link>
           </div>
         </div>
       </section>
 
-      {/* Maturity across Africa (from published rankings) */}
+      {/* Map: round 1 coverage, or published maturity levels */}
       <section className="band">
         <div className="container">
-          <p className="eyebrow">Continental analysis</p>
-          <h2 className="display"><strong>Maturity</strong> across Africa</h2>
+          <p className="eyebrow">Continental assessment · {COVERAGE_ROUND}</p>
+          <h2 className="display"><strong>{ROUND1_ASSESSED.length}</strong> African Union member states assessed</h2>
 
-          <p className="band-intro">Each country is coloured by its overall maturity level. Click a country to see more.</p>
+          <p className="band-intro">
+            Click a country to see its status. Switch to &ldquo;Maturity level&rdquo; to see published results.
+          </p>
           <AfricaMap countries={mapCountries} levels={levelName} />
         </div>
       </section>

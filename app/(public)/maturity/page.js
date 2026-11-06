@@ -23,7 +23,7 @@ export default async function MaturityPage({ searchParams }) {
     supabase
       .from("assessments")
       .select(
-        "round_label, overall_score, overall_level, level_capped, score_low, score_high, is_provisional, countries!inner(name, iso_code, region, is_visible), assessment_scores(area_id, score, score_status)"
+        "round_label, updated_at, overall_score, overall_level, level_capped, score_low, score_high, is_provisional, countries!inner(name, iso_code, region, is_visible), assessment_scores(area_id, score, score_status)"
       )
       .eq("status", "published")
       .eq("countries.is_visible", true)
@@ -60,6 +60,7 @@ export default async function MaturityPage({ searchParams }) {
     .sort((a, b) => a.name.localeCompare(b.name)); // A–Z: the framework says results are not a ranking
 
   const anyProvisional = rows.some((r) => r.provisional);
+  const lastUpdated = [...latest.values()].map((a) => a.updated_at).filter(Boolean).sort().pop();
   const rounds = [...new Set(rows.map((r) => r.round))];
   const initial = String(c).toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
   const viewLink = (v) => `/maturity?view=${v}${c ? `&c=${encodeURIComponent(c)}` : ""}`;
@@ -73,6 +74,12 @@ export default async function MaturityPage({ searchParams }) {
         How well each country&apos;s policy and regulatory environment supports telehealth, across the eleven domains
         of the Telehealth Policy Maturity Assessment Framework.
       </p>
+      {lastUpdated && (
+        <p className="muted small last-updated">
+          Results last updated{" "}
+          {new Date(lastUpdated).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+        </p>
+      )}
 
       <div className="maturity-notes">
         {anyProvisional && (

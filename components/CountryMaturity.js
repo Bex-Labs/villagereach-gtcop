@@ -23,7 +23,7 @@ export default async function CountryMaturity({ countryId, countryCode }) {
     supabase
       .from("assessments")
       .select(
-        "id, round_label, assessed_on, overall_score, overall_level, level_capped, score_low, score_high, ts_score, sr_score, is_provisional, typology, completeness, summary, assessment_scores(area_id, score, score_status, provisional_score), assessment_gaps(function_name, gap_type, status, sort_order)"
+        "id, round_label, assessed_on, updated_at, overall_score, overall_level, level_capped, score_low, score_high, ts_score, sr_score, is_provisional, typology, completeness, summary, assessment_scores(area_id, score, score_status, provisional_score), assessment_gaps(function_name, gap_type, status, sort_order)"
       )
       .eq("country_id", countryId)
       .eq("status", "published")
@@ -78,7 +78,8 @@ export default async function CountryMaturity({ countryId, countryCode }) {
           <h2>Telehealth policy maturity</h2>
           <p className="muted small">
             Assessment round {current.round_label}
-            {current.assessed_on && <> · {formatDate(current.assessed_on)}</>}
+            {current.assessed_on && <> · Assessed {formatDate(current.assessed_on)}</>}
+            {current.updated_at && <> · Last updated {formatDate(current.updated_at)}</>}
           </p>
         </div>
         {current.is_provisional && <span className="cm-provisional">Provisional: under government review</span>}

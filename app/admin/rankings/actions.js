@@ -131,20 +131,35 @@ export async function saveAssessment(formData) {
     assessmentId = data.id;
   }
 
-  // Replace the scores and gaps with what's on the form
-  await supabase.from("assessment_scores").delete().eq("assessment_id", assessmentId);
+  // Scores: update in place, so the activity log only records parts that really changed
   if (scores.length) {
     const { error } = await supabase
       .from("assessment_scores")
-      .insert(scores.map((s) => ({ ...s, assessment_id: assessmentId })));
+      .upsert(scores.map((s) => ({ ...s, assessment_id: assessmentId })), { onConflict: "assessment_id,area_id" });
     if (error) return { error: "The result was saved, but the scores were not. Please try again." };
   }
-  await supabase.from("assessment_gaps").delete().eq("assessment_id", assessmentId);
-  if (gaps.length) {
-    const { error } = await supabase
-      .from("assessment_gaps")
-      .insert(gaps.map((g) => ({ ...g, assessment_id: assessmentId })));
-    if (error) return { error: "The result was saved, but the gaps were not. Please try again." };
+  // Remove parts that were set before but are now "Not set"
+  let clear = supabase.from("assessment_scores").delete().eq("assessment_id", assessmentId);
+  if (scores.length) clear = clear.not("area_id", "in", `(${scores.map((s) => s.area_id).join(",")})`);
+  await clear;
+
+  // Gaps: only rewrite them if the list actually changed
+  const { data: oldGaps } = await supabase
+    .from("assessment_gaps")
+    .select("function_name, gap_type, status, sort_order")
+    .eq("assessment_id", assessmentId)
+    .order("sort_order");
+  const sameGaps = JSON.stringify(
+    (oldGaps ?? []).map((g) => [g.function_name, g.gap_type, g.status])
+  ) === JSON.stringify(gaps.map((g) => [g.function_name, g.gap_type, g.status]));
+  if (!sameGaps) {
+    await supabase.from("assessment_gaps").delete().eq("assessment_id", assessmentId);
+    if (gaps.length) {
+      const { error } = await supabase
+        .from("assessment_gaps")
+        .insert(gaps.map((g) => ({ ...g, assessment_id: assessmentId })));
+      if (error) return { error: "The result was saved, but the gaps were not. Please try again." };
+    }
   }
 
   revalidatePath("/", "layout");
