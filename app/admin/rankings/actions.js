@@ -206,3 +206,52 @@ export async function deleteAssessment(formData) {
   revalidatePath("/", "layout");
   redirect("/admin/rankings?saved=deleted");
 }
+
+// Publish or unpublish several results at once (the tick boxes on the results list).
+// Results with parts still "Not set" are skipped when publishing, and listed in the message.
+export async function setManyStatuses(formData) {
+  const status = formData.get("status") === "published" ? "published" : "draft";
+  const ids = String(formData.get("ids") ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter((x) => /^\d+$/.test(x));
+  if (!ids.length) {
+    redirect(`/admin/rankings?error=${encodeURIComponent("Tick at least one result first.")}`);
+  }
+
+  const supabase = await createClient();
+  const now = new Date().toISOString();
+  let done = 0;
+  const skipped = [];
+
+  if (status === "draft") {
+    const { data } = await supabase.from("assessments").update({ status, updated_at: now }).in("id", ids).select("id");
+    done = data?.length ?? 0;
+  } else {
+    const [{ data: units }, { data: list }] = await Promise.all([
+      supabase.from("thematic_areas").select(UNIT_FIELDS),
+      supabase
+        .from("assessments")
+        .select("id, round_label, countries(name), assessment_scores(area_id, score, score_status)")
+        .in("id", ids),
+    ]);
+    for (const a of list ?? []) {
+      if ((a.assessment_scores ?? []).length < (units ?? []).length) {
+        skipped.push(`${a.countries?.name ?? "A result"} (${a.round_label})`);
+        continue;
+      }
+      // Recalculate so the published results match the scores, as single publishing does
+      const { error } = await supabase
+        .from("assessments")
+        .update({ status, updated_at: now, ...resultFields(units, a.assessment_scores) })
+        .eq("id", a.id);
+      if (error) skipped.push(`${a.countries?.name ?? "A result"} (${a.round_label})`);
+      else done++;
+    }
+  }
+
+  revalidatePath("/", "layout");
+  const params = new URLSearchParams({ bulk: status, done: String(done) });
+  if (skipped.length) params.set("skipped", skipped.join(", ").slice(0, 1500));
+  redirect(`/admin/rankings?${params}`);
+}

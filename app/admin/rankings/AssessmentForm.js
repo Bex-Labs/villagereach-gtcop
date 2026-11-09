@@ -4,6 +4,8 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { saveAssessment } from "./actions";
 import { calculateResult, LEVELS, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES } from "@/lib/maturity";
+import ScoringRules from "@/components/ScoringRules";
+import ConditionTip from "@/components/ConditionTip";
 
 const SCORE_OPTIONS = [
   ["", "Not set"],
@@ -55,6 +57,34 @@ export default function AssessmentForm({ countries, units, initial }) {
   );
   const result = calculateResult(units, scores);
   const missing = units.filter((u) => values[u.id].v === "").length;
+
+  // Minimum conditions: which parts are holding each one back (for the ⓘ tooltips)
+  const num = (u) => (/^[0-4]$/.test(values[u.id].v) ? Number(values[u.id].v) : null);
+  const shown = (u) => {
+    const v = values[u.id].v;
+    return v === "" ? "not set" : v === "NE" || v === "P" ? `${v}, not counted` : v;
+  };
+  const named = (u) => `${u.code} ${u.name} (${shown(u)})`;
+  const critical = units.filter((u) => u.is_critical);
+  const criticalCodes = critical.map((u) => u.code).join(", ");
+  const belowIn = (list, min) => list.filter((u) => (num(u) ?? -1) < min).map(named);
+  const financing = units.find((u) => u.code === "7a");
+
+  const level4Problems = [{ heading: "Critical domains below 2 now:", items: belowIn(critical, 2) }];
+  const level5Problems = [
+    { heading: "Critical domains below 3 now:", items: belowIn(critical, 3) },
+    { heading: "Parts scored 0:", items: units.filter((u) => num(u) === 0).map(named) },
+    { heading: "Financing (7a) below 2:", items: financing ? belowIn([financing], 2) : [] },
+  ].filter((p) => p.items.length);
+
+  const noteFor = (lvl, met) => {
+    const start = LEVELS.find((l) => l.level === lvl)?.min ?? 0;
+    if (result.overall === null) return null;
+    if (result.overall < start) return `This only matters once the overall score reaches ${start.toFixed(2)} (now ${result.overall.toFixed(2)}).`;
+    return met
+      ? `The score is high enough for Level ${lvl}, and this condition is met.`
+      : `The score is high enough for Level ${lvl}, so this is holding the result at Level ${result.level}.`;
+  };
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -287,16 +317,28 @@ export default function AssessmentForm({ countries, units, initial }) {
           </div>
           <div className="calc-box">
             <p className="calc-label">Minimum conditions</p>
-            <p className={result.meetsLevel4 ? "calc-ok" : "calc-no"}>
-              {result.meetsLevel4 ? "✓" : "✗"} Level 4: the five critical domains all 2 or more
-            </p>
-            <p className={result.meetsLevel5 ? "calc-ok" : "calc-no"}>
-              {result.meetsLevel5 ? "✓" : "✗"} Level 5: critical domains all 3 or more, no part at 0, financing 2 or more
-            </p>
+            <ConditionTip
+              level={4}
+              met={result.meetsLevel4}
+              rule={`To reach Level 4, the five critical domains (${criticalCodes}) must all score 2 or more.`}
+              okText="All five critical domains score 2 or more."
+              problems={level4Problems}
+              note={noteFor(4, result.meetsLevel4)}
+            />
+            <ConditionTip
+              level={5}
+              met={result.meetsLevel5}
+              rule={`To reach Level 5, the critical domains (${criticalCodes}) must all score 3 or more, no part can score 0, and financing (7a) must score 2 or more.`}
+              okText="All critical domains score 3 or more, no part is at 0, and financing is 2 or more."
+              problems={level5Problems}
+              note={noteFor(5, result.meetsLevel5)}
+            />
+            <p className="muted small cond-hint">Hover over or tap ⓘ for details.</p>
           </div>
           <p className="muted small">
             {units.length - missing} of {units.length} parts set. Follows the framework&apos;s summary edition.
           </p>
+          <ScoringRules />
           <div className="form-actions">
             <Link href="/admin/rankings" className="btn btn-outline">Cancel</Link>
             <button type="submit" className="btn btn-outline" disabled={pending}

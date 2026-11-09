@@ -35,9 +35,7 @@ export default function Header({ signedIn }) {
             unoptimized
             priority
           />
-          <span className="brand-text">
-            <span className="brand-sub">A VillageReach platform</span>
-          </span>
+          
         </Link>
 
         <button

@@ -8,8 +8,6 @@ export default function Footer() {
       <div className="container footer-compact-inner">
         <p>
           <strong>GTCOP Assessment</strong>
-          <br />
-          <span className="footer-sub">A VillageReach platform</span>
         </p>
         <nav aria-label="Footer">
           <Link href="/countries">Countries</Link>
@@ -17,7 +15,7 @@ export default function Footer() {
           <Link href="/study-materials">Study materials</Link>
           <Link href="/about">About</Link>
         </nav>
-        <p>© {year} VillageReach</p>
+        <p>© {year} GTCOP Assessment</p>
       </div>
     </footer>
   );

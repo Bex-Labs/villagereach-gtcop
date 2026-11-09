@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import LevelPill from "@/components/LevelPill";
-import DeleteResultButton from "@/components/DeleteResultButton";
+import ResultsTable from "@/components/ResultsTable";
 import { formatWhen, RESULT_ENTITIES } from "@/lib/activity-text";
-import { setAssessmentStatus } from "./actions";
 
 export const metadata = { title: "Maturity results | Admin" };
 
@@ -14,7 +12,7 @@ const MESSAGES = {
 };
 
 export default async function ResultsPage({ searchParams }) {
-  const { saved, error } = await searchParams;
+  const { saved, error, bulk, done, skipped } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: rows }, { data: levels }, { count: unitCount }, { data: countries }] = await Promise.all([
@@ -45,6 +43,30 @@ export default async function ResultsPage({ searchParams }) {
   const publishedIds = new Set((rows ?? []).filter((r) => r.status === "published").map((r) => r.country_id));
   const without = (countries ?? []).filter((c) => !publishedIds.has(c.id));
 
+  // Plain rows for the table (sorted A–Z by country)
+  const tableRows = [...(rows ?? [])]
+    .sort((a, b) => (a.countries?.name ?? "").localeCompare(b.countries?.name ?? ""))
+    .map((r) => ({
+      id: r.id,
+      country: r.countries?.name ?? "—",
+      round: r.round_label,
+      score: r.overall_score != null ? Number(r.overall_score).toFixed(2) : null,
+      level: r.overall_level,
+      levelName: levelName[r.overall_level] ?? null,
+      capped: r.level_capped,
+      filled: r.assessment_scores?.[0]?.count ?? 0,
+      isLive: r.status === "published",
+      provisional: r.is_provisional,
+      imported: !!r.import_batch_id,
+      updated: formatWhen(r.updated_at),
+      by: lastBy[String(r.id)] ?? null,
+    }));
+
+  // Message after publishing or unpublishing several at once
+  const bulkMessage = bulk
+    ? `${done ?? 0} result${done === "1" ? "" : "s"} ${bulk === "published" ? "published" : "unpublished (back to draft)"}.`
+    : null;
+
   return (
     <>
       <div className="page-head">
@@ -59,59 +81,17 @@ export default async function ResultsPage({ searchParams }) {
       {error && <div className="alert alert-error" role="alert">{error}</div>}
       {MESSAGES[saved] && <div className="alert alert-success" role="status">{MESSAGES[saved]}</div>}
 
-      {(rows ?? []).length === 0 ? (
+      {bulkMessage && <div className="alert alert-success" role="status">{bulkMessage}</div>}
+      {skipped && (
+        <div className="alert alert-error" role="alert">
+          Not published, because some parts are still &ldquo;Not set&rdquo;: {skipped}. Open each one with Edit to finish it.
+        </div>
+      )}
+
+      {tableRows.length === 0 ? (
         <div className="card"><p className="muted">No results yet. Click <strong>Add result</strong> to start.</p></div>
       ) : (
-        <div className="card" style={{ overflowX: "auto" }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Country</th><th>Round</th><th>Score</th><th>Level</th><th>Parts set</th>
-                <th>Status</th><th>Updated</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...rows].sort((a, b) => (a.countries?.name ?? "").localeCompare(b.countries?.name ?? "")).map((r) => {
-                const filled = r.assessment_scores?.[0]?.count ?? 0;
-                const isLive = r.status === "published";
-                return (
-                  <tr key={r.id}>
-                    <td>{r.countries?.name}</td>
-                    <td>{r.round_label}</td>
-                    <td>{r.overall_score != null ? Number(r.overall_score).toFixed(2) : "–"}</td>
-                    <td>
-                      <LevelPill level={r.overall_level} name={levelName[r.overall_level]} />
-                      {r.level_capped && <span className="muted small"> (held by a minimum condition)</span>}
-                    </td>
-                    <td>{filled} / {unitCount}</td>
-                    <td>
-                      <span className={`badge ${isLive ? "badge-live" : "badge-hidden"}`}>
-                        {isLive ? "Published" : "Draft"}
-                      </span>
-                      {r.is_provisional && <span className="badge badge-pending">Provisional</span>}
-                      {r.import_batch_id && <span className="badge badge-hidden">Imported</span>}
-                    </td>
-                    <td className="small">
-                      {formatWhen(r.updated_at)}
-                      {lastBy[String(r.id)] && <><br /><span className="muted">by {lastBy[String(r.id)]}</span></>}
-                    </td>
-                    <td>
-                      <div className="row-actions">
-                        <Link href={`/admin/rankings/${r.id}`} className="btn btn-outline">Edit</Link>
-                        <form action={setAssessmentStatus} className="inline-form">
-                          <input type="hidden" name="id" value={r.id} />
-                          <input type="hidden" name="status" value={isLive ? "draft" : "published"} />
-                          <button className="btn btn-outline">{isLive ? "Unpublish" : "Publish"}</button>
-                        </form>
-                        <DeleteResultButton id={r.id} label={`${r.countries?.name ?? "this country"} (${r.round_label})`} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ResultsTable rows={tableRows} unitCount={unitCount ?? 0} />
       )}
 
       <section className="card" style={{ marginTop: 24 }}>
