@@ -3,7 +3,10 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { saveAssessment } from "./actions";
-import { calculateResult, LEVELS, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES } from "@/lib/maturity";
+import {
+  calculateResult, LEVELS, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES,
+  EVIDENCE_LEVELS, CONFIDENCE_LEVELS, OBSERVED_OPTIONS,
+} from "@/lib/maturity";
 import ScoringRules from "@/components/ScoringRules";
 import ConditionTip from "@/components/ConditionTip";
 
@@ -238,11 +241,61 @@ export default function AssessmentForm({ countries, units, initial }) {
                 </select>
               </div>
               <div>
-                <label htmlFor="completeness">Evidence completeness (optional)</label>
+                <label htmlFor="observed_activity">Telehealth activity seen without a framework? (optional)</label>
+                <select id="observed_activity" name="observed_activity" defaultValue={initial?.observed_activity ?? ""}>
+                  <option value="">Not set</option>
+                  {OBSERVED_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <h3 className="edit-subhead">Evidence and confidence</h3>
+            <p className="muted small">
+              Shown next to the scores on the public site, so readers know how firm each result is.
+            </p>
+            <div className="field-row">
+              <div>
+                <label htmlFor="completeness">Core document types held (optional)</label>
                 <select id="completeness" name="completeness" defaultValue={initial?.completeness ?? ""}>
                   <option value="">Not set</option>
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n} of 8 core document types</option>)}
                 </select>
+              </div>
+              <div>
+                <label htmlFor="evidence_label">Evidence completeness (optional)</label>
+                <select id="evidence_label" name="evidence_label" defaultValue={initial?.evidence_label ?? ""}>
+                  <option value="">Not set</option>
+                  {EVIDENCE_LEVELS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="confidence">Confidence (optional)</label>
+                <select id="confidence" name="confidence" defaultValue={initial?.confidence ?? ""}>
+                  <option value="">Not set</option>
+                  {CONFIDENCE_LEVELS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="field-row">
+              <div>
+                <label htmlFor="instruments_total">Instruments reviewed</label>
+                <input id="instruments_total" name="instruments_total" type="number" min="0" step="1"
+                  defaultValue={initial?.instruments_total ?? ""} />
+              </div>
+              <div>
+                <label htmlFor="instruments_binding">…of which legally binding</label>
+                <input id="instruments_binding" name="instruments_binding" type="number" min="0" step="1"
+                  defaultValue={initial?.instruments_binding ?? ""} />
+              </div>
+              <div>
+                <label htmlFor="instruments_scored">…scored <span className="muted small">(admin only)</span></label>
+                <input id="instruments_scored" name="instruments_scored" type="number" min="0" step="1"
+                  defaultValue={initial?.instruments_scored ?? ""} />
+              </div>
+              <div>
+                <label htmlFor="instruments_excluded">…excluded <span className="muted small">(admin only)</span></label>
+                <input id="instruments_excluded" name="instruments_excluded" type="number" min="0" step="1"
+                  defaultValue={initial?.instruments_excluded ?? ""} />
               </div>
             </div>
             <label htmlFor="summary">Commentary (optional)</label>

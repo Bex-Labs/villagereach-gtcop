@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { calculateResult, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES } from "@/lib/maturity";
+import { calculateResult, MAX_SCORE, TYPOLOGIES, GAP_TYPES, GAP_STATUSES, EVIDENCE_LEVELS, CONFIDENCE_LEVELS, OBSERVED_OPTIONS } from "@/lib/maturity";
 
 const UNIT_FIELDS = "id, code, domain_no, ts_share, is_critical";
 
@@ -85,6 +85,25 @@ export async function saveAssessment(formData) {
   const typology = formData.get("typology");
   const completeness = formData.get("completeness");
 
+  // Evidence and confidence
+  const pick = (name, list) => (list.includes(formData.get(name)) ? formData.get(name) : null);
+  const count = (name) => {
+    const v = String(formData.get(name) ?? "").trim();
+    if (v === "") return null;
+    return /^\d+$/.test(v) ? Number(v) : NaN;
+  };
+  const instruments = {
+    instruments_total: count("instruments_total"),
+    instruments_binding: count("instruments_binding"),
+    instruments_scored: count("instruments_scored"),
+    instruments_excluded: count("instruments_excluded"),
+  };
+  if (Object.values(instruments).some(Number.isNaN)) return { error: "Instrument numbers must be whole numbers (0 or more)." };
+  const total = instruments.instruments_total;
+  if (total !== null && ["instruments_binding", "instruments_scored", "instruments_excluded"].some((k) => instruments[k] > total)) {
+    return { error: "Binding, scored and excluded instruments can't be more than the instruments reviewed." };
+  }
+
   // Key gaps (sent from the form as a list)
   let gaps = [];
   try {
@@ -110,6 +129,10 @@ export async function saveAssessment(formData) {
     score_high: high,
     typology: TYPOLOGIES.includes(typology) ? typology : null,
     completeness: completeness !== null && completeness !== "" ? Number(completeness) : null,
+    evidence_label: pick("evidence_label", EVIDENCE_LEVELS),
+    confidence: pick("confidence", CONFIDENCE_LEVELS),
+    observed_activity: pick("observed_activity", OBSERVED_OPTIONS),
+    ...instruments,
     status,
     updated_at: new Date().toISOString(),
     // Overall score, level and dimension scores: worked out here from the scores,

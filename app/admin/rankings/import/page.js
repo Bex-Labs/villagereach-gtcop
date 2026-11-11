@@ -54,11 +54,12 @@ export default async function ImportPage({ searchParams }) {
           <summary>How to fill in the files</summary>
           <ul>
             <li><strong>country_code</strong>: the two-letter code, e.g. NG, KE.</li>
-            <li><strong>round</strong>: e.g. 2026. Use SIM for practice data, so it never mixes with real results.</li>
+            <li><strong>round</strong>: e.g. Round 1 - 2026. Use SIM for practice data, so it never mixes with real results.</li>
             <li><strong>Parts 1 to 11</strong>: 0–4, <strong>NE</strong> (not evaluable), <strong>P</strong> or <strong>P3</strong> (provisional, with its score). Leave blank if not scored yet.</li>
             <li><strong>assessed_on</strong>: 2026-09-12 or 12/09/2026. <strong>provisional</strong>: yes or no (blank means yes).</li>
             <li><strong>typology</strong>: one of the seven typologies, spelled as on the form. <strong>completeness</strong>: 0–8.</li>
             <li><strong>score_low / score_high</strong>: the uncertainty range, optional.</li>
+            <li><strong>Evidence and confidence</strong> (optional columns): evidence_label and confidence are Low, Medium or High; instruments_total, instruments_binding, instruments_scored and instruments_excluded are whole numbers; observed_activity is Yes, No or Not determined.</li>
             <li><strong>Gaps file</strong>: gap_type is Legal, Operational, Financing, Equity, Data protection and safety or Evidence; status is Not evidenced or Partially addressed.</li>
             <li>A country can only be imported once per round. To change an imported result, edit it, or undo the import and upload again.</li>
           </ul>

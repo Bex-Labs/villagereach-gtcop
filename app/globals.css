@@ -1848,3 +1848,7 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 .pick-col input { width: 20px; height: 20px; cursor: pointer; accent-color: #0B4454; }
 .bulk-table tr.is-picked td { background: #F1F7F9; }
 @media (max-width: 760px) { .bulk-bar.is-active { margin: 0 -16px 8px; padding: 14px 16px; } .bulk-actions { margin-left: 0; } }
+
+/* Admin form: evidence and confidence (VR round 1) */
+.edit-subhead { margin: 20px 0 4px; font-size: 18px; color: var(--rust); }
+.edit-subhead + p { margin-top: 0; }
