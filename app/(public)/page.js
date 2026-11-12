@@ -42,7 +42,7 @@ export default async function Home() {
       supabase.from("maturity_levels").select("level, name").order("level"),
       supabase
         .from("assessments")
-        .select("country_id, overall_level, completeness")
+        .select("country_id, overall_level, overall_score, completeness")
         .eq("status", "published")
         .order("round_label", { ascending: false }),
       getContent(supabase), // G-03: wording set in admin → Site content
@@ -72,6 +72,7 @@ export default async function Home() {
     name: c.name,
     level: latestLevel.get(c.id)?.overall_level ?? null,
     coreDocs: latestLevel.get(c.id)?.completeness ?? null,
+    score: latestLevel.get(c.id)?.overall_score != null ? Number(latestLevel.get(c.id).overall_score) : null,
     docs: counts[c.id] || 0,
   }));
 
@@ -109,7 +110,7 @@ export default async function Home() {
           <h2 className="display"><strong>{ROUND1_ASSESSED.length}</strong> African Union member states assessed</h2>
 
           <p className="band-intro">
-            Click a country to see its status. Switch to &ldquo;Maturity level&rdquo; to see published results.
+            Hover over a country for a quick summary, or click it for full details. Switch to &ldquo;Maturity level&rdquo; to see published results.
           </p>
           <AfricaMap countries={mapCountries} levels={levelName} />
         </div>

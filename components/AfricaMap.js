@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { AFRICAN_COUNTRIES } from "@/lib/africa";
 import { MAP_WIDTH, MAP_HEIGHT, LABEL_OFFSETS, ISLANDS, SHAPES } from "@/lib/africa-shapes";
@@ -22,6 +22,31 @@ export default function AfricaMap({ countries, levels }) {
   const [selected, setSelected] = useState("NG");
 
   const nameOf = (iso) => byIso[iso]?.name ?? NAMES[iso] ?? iso;
+
+  // Hover tooltip: follows the mouse; also shows when you Tab onto a country.
+  // Phones have no hover, so a tap just selects the country as before.
+  const boardRef = useRef(null);
+  const lastPointer = useRef("mouse");
+  const [tip, setTip] = useState(null); // { iso, x, y }
+  const placeAt = (iso, clientX, clientY) => {
+    const b = boardRef.current?.getBoundingClientRect();
+    if (!b) return;
+    setTip({ iso, x: clientX - b.left, y: clientY - b.top, w: b.width });
+  };
+  const hoverProps = (iso) => ({
+    onPointerDown: (e) => { lastPointer.current = e.pointerType; },
+    onPointerEnter: (e) => { if (e.pointerType === "mouse") placeAt(iso, e.clientX, e.clientY); },
+    onPointerMove: (e) => { if (e.pointerType === "mouse") placeAt(iso, e.clientX, e.clientY); },
+    onPointerLeave: () => setTip(null),
+  });
+  const focusProps = (iso) => ({
+    onFocus: (e) => {
+      if (lastPointer.current === "touch") return;
+      const r = e.currentTarget.getBoundingClientRect();
+      placeAt(iso, r.left + r.width / 2, r.top + r.height / 3);
+    },
+    onBlur: () => setTip(null),
+  });
 
   // Colour class and status text for each view
   const classOf = (iso) => {
@@ -61,7 +86,7 @@ export default function AfricaMap({ countries, levels }) {
       </div>
 
       <div className="amap-row">
-        <div className="amap-board">
+        <div className="amap-board" ref={boardRef}>
           <svg
             className="amap-svg"
             viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
@@ -82,8 +107,11 @@ export default function AfricaMap({ countries, levels }) {
                   tabIndex={0}
                   aria-pressed={selected === s.iso}
                   aria-label={`${nameOf(s.iso)}: ${statusOf(s.iso)}`}
+                  aria-describedby={tip?.iso === s.iso ? "amap-tip" : undefined}
                   onClick={() => setSelected(s.iso)}
-                  onKeyDown={onKey(s.iso)}
+                  onKeyDown={(e) => { if (e.key === "Escape") setTip(null); onKey(s.iso)(e); }}
+                  {...hoverProps(s.iso)}
+                  {...focusProps(s.iso)}
                 >
                   <path d={s.d} className={`amap-shape ${classOf(s.iso)}`} />
                   {ISLANDS.includes(s.iso) && (
@@ -99,7 +127,7 @@ export default function AfricaMap({ countries, levels }) {
               if (!off) {
                 return (
                   <text key={s.iso} x={s.lx} y={s.ly} className={`amap-label ${darkFill(s.iso) ? "on-dark" : ""}`}
-                    aria-hidden="true" onClick={() => setSelected(s.iso)}>
+                    aria-hidden="true" onClick={() => setSelected(s.iso)} {...hoverProps(s.iso)}>
                     {s.iso}
                   </text>
                 );
@@ -107,7 +135,7 @@ export default function AfricaMap({ countries, levels }) {
               // Small countries: label outside, with a short line pointing to the country
               const [dx, dy] = off;
               return (
-                <g key={s.iso} aria-hidden="true" onClick={() => setSelected(s.iso)} className="amap-callout">
+                <g key={s.iso} aria-hidden="true" onClick={() => setSelected(s.iso)} className="amap-callout" {...hoverProps(s.iso)}>
                   <line x1={s.lx} y1={s.ly} x2={s.lx + dx} y2={s.ly + dy} />
                   {!ISLANDS.includes(s.iso) && <circle cx={s.lx} cy={s.ly} r="2.5" />}
                   <text x={s.lx + dx} y={s.ly + dy} className="amap-label amap-label-small">{s.iso}</text>
@@ -115,6 +143,7 @@ export default function AfricaMap({ countries, levels }) {
               );
             })}
           </svg>
+          {tip && <MapTip tip={tip} view={view} country={byIso[tip.iso]} name={nameOf(tip.iso)} levels={levels} />}
           <p className="muted small amap-note">
             <Link href="/countries">View countries as a list</Link>
           </p>
@@ -188,6 +217,56 @@ export default function AfricaMap({ countries, levels }) {
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+// The small box shown when hovering over (or tabbing onto) a country
+function MapTip({ tip, view, country, name, levels }) {
+  const cov = coverageOf(tip.iso);
+  const flipX = tip.x > tip.w - 270; // near the right edge: open to the left
+  const flipY = tip.y < 190; // near the top: open below
+  const style = {
+    left: flipX ? undefined : tip.x + 14,
+    right: flipX ? tip.w - tip.x + 14 : undefined,
+    top: flipY ? tip.y + 18 : undefined,
+    bottom: flipY ? undefined : `calc(100% - ${tip.y - 14}px)`,
+  };
+
+  return (
+    <div className="amap-tip" id="amap-tip" role="tooltip" style={style}>
+      <p className="amap-tip-name">{name}</p>
+      {view === "coverage" ? (
+        <>
+          <p className="amap-tip-row">
+            <span className={`amap-tip-dot amap-cov-${cov}`} aria-hidden="true" />
+            {COVERAGE_TEXT[cov].status}
+          </p>
+          {cov === "assessed" && <p className="amap-tip-sub">Results provisional, under government review</p>}
+          {country && (
+            <p className="amap-tip-sub">
+              {country.docs} published {country.docs === 1 ? "document" : "documents"} on this site
+            </p>
+          )}
+        </>
+      ) : country?.level ? (
+        <>
+          <p className="amap-tip-row">
+            <span className={`amap-tip-dot amap-l${country.level}`} aria-hidden="true" />
+            Level {country.level} · {levels[country.level]}
+          </p>
+          {country.score != null && (
+            <p className="amap-tip-sub">Overall score <strong>{country.score.toFixed(2)}</strong> of 4</p>
+          )}
+          {country.coreDocs != null && (
+            <p className="amap-tip-sub">Evidence: {country.coreDocs} of 8 core document types</p>
+          )}
+          <span className="amap-tip-flag">Provisional</span>
+        </>
+      ) : (
+        <p className="amap-tip-sub">No published result yet</p>
+      )}
+      {country && <p className="amap-tip-hint">Click for details</p>}
     </div>
   );
 }

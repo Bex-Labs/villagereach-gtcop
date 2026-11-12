@@ -1867,3 +1867,21 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 .results-search label { font-weight: 700; margin: 0; }
 .results-search input { flex: 1 1 260px; max-width: 420px; }
 .results-search p { margin: 0; }
+
+/* Home map: hover tooltip */
+.amap-board { position: relative; }
+.amap-tip {
+  position: absolute; z-index: 30; width: 250px; pointer-events: none;
+  background: #1B3038; color: var(--white); padding: 12px 14px; font-size: 14px; line-height: 1.45;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+}
+.amap-tip p { margin: 0 0 3px; }
+.amap-tip-name { font-weight: 700; font-size: 16px; margin-bottom: 6px !important; }
+.amap-tip-row { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.amap-tip-dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--white); flex: 0 0 auto; }
+.amap-tip-sub { color: #D4E7EC; }
+.amap-tip-sub strong { color: var(--white); }
+.amap-tip-flag { display: inline-block; background: #FBEFC9; color: #6B4E00; font-size: 12px; font-weight: 700; padding: 1px 7px; margin: 4px 0 2px; }
+.amap-tip-hint { color: #A9D0DA; font-size: 12px; margin: 6px 0 0 !important; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.amap-country:hover .amap-shape, .amap-country:focus-visible .amap-shape { stroke: #B79443; stroke-width: 2.5; }
+@media (hover: none) { .amap-tip { display: none; } }
