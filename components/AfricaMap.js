@@ -130,6 +130,9 @@ export default function AfricaMap({ countries, levels }) {
               {statusOf(selected)}
             </p>
             {view === "coverage" && <p className="muted">{COVERAGE_TEXT[coverageOf(selected)].detail}</p>}
+            {view === "level" && sel?.level && sel.coreDocs != null && (
+              <p className="muted small">Evidence: {sel.coreDocs} of 8 core document types</p>
+            )}
             {sel && (
               <>
                 <p className="muted small">
@@ -175,6 +178,11 @@ export default function AfricaMap({ countries, levels }) {
                   </li>
                 </ul>
               </>
+            )}
+            {view === "level" && (
+              <p className="muted small amap-measure">
+                Levels describe the policy and regulatory environment, not whether telehealth is operating. Provisional.
+              </p>
             )}
             <Link href="/maturity" className="arrow-link">See the maturity results →</Link>
           </div>

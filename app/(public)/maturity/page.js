@@ -23,7 +23,7 @@ export default async function MaturityPage({ searchParams }) {
     supabase
       .from("assessments")
       .select(
-        "round_label, updated_at, overall_score, overall_level, level_capped, score_low, score_high, is_provisional, countries!inner(name, iso_code, region, is_visible), assessment_scores(area_id, score, score_status)"
+        "round_label, updated_at, overall_score, overall_level, level_capped, score_low, score_high, is_provisional, completeness, evidence_label, confidence, countries!inner(name, iso_code, region, is_visible), assessment_scores(area_id, score, score_status)"
       )
       .eq("status", "published")
       .eq("countries.is_visible", true)
@@ -53,6 +53,9 @@ export default async function MaturityPage({ searchParams }) {
         level: a.overall_level ?? calc.level,
         capped: a.level_capped,
         provisional: a.is_provisional,
+        docs: a.completeness,
+        evidence: a.evidence_label,
+        confidence: a.confidence,
         borderline: score != null && LEVELS.slice(1).some((l) => Math.abs(score - l.min) < BORDERLINE),
         domains: calc.domainScores,
       };
@@ -60,6 +63,8 @@ export default async function MaturityPage({ searchParams }) {
     .sort((a, b) => a.name.localeCompare(b.name)); // A–Z: the framework says results are not a ranking
 
   const anyProvisional = rows.some((r) => r.provisional);
+  const allLowConfidence = rows.length > 0 && rows.every((r) => r.confidence === "Low");
+  const anyDocs = rows.some((r) => r.docs != null);
   const lastUpdated = [...latest.values()].map((a) => a.updated_at).filter(Boolean).sort().pop();
   const rounds = [...new Set(rows.map((r) => r.round))];
   const initial = String(c).toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
@@ -68,7 +73,11 @@ export default async function MaturityPage({ searchParams }) {
   return (
     <main className="container page">
       <p className="breadcrumbs"><Link href="/">Home</Link> / Maturity</p>
-      {rounds.length > 0 && <p className="eyebrow">Assessment round {rounds.join(", ")}</p>}
+      {rounds.length > 0 && (
+        <p className="eyebrow">
+          {rounds.every((r) => /round|assessment/i.test(r)) ? rounds.join(", ") : `Assessment round ${rounds.join(", ")}`}
+        </p>
+      )}
       <h1 className="display">Telehealth policy <strong>maturity</strong></h1>
       <p className="muted">
         How well each country&apos;s policy and regulatory environment supports telehealth, across the eleven domains
@@ -86,6 +95,15 @@ export default async function MaturityPage({ searchParams }) {
           <div className="maturity-note note-provisional">
             <strong>Provisional results</strong>
             <span>Governments are reviewing their country profiles through WHO. Scores may change after review.</span>
+          </div>
+        )}
+        {(allLowConfidence || anyDocs) && (
+          <div className="maturity-note note-provisional">
+            <strong>How firm the results are</strong>
+            <span>
+              {allLowConfidence && "Confidence is low for every country: these are preliminary single-reviewer scores, not yet validated with national focal points. "}
+              {anyDocs && "Each score shows how many of 8 core document types the review held. A low count means the review did not receive those documents, not that the country lacks them."}
+            </span>
           </div>
         )}
         <div className="maturity-note note-measure">

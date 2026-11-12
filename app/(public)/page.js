@@ -42,7 +42,7 @@ export default async function Home() {
       supabase.from("maturity_levels").select("level, name").order("level"),
       supabase
         .from("assessments")
-        .select("country_id, overall_level")
+        .select("country_id, overall_level, completeness")
         .eq("status", "published")
         .order("round_label", { ascending: false }),
       getContent(supabase), // G-03: wording set in admin → Site content
@@ -62,7 +62,7 @@ export default async function Home() {
   const latestLevel = new Map();
   (assessments ?? []).forEach((a) => {
     if (visibleIds.has(a.country_id) && !latestLevel.has(a.country_id)) {
-      latestLevel.set(a.country_id, a.overall_level);
+      latestLevel.set(a.country_id, a);
     }
   });
   // For the map: each visible country with its latest level and number of documents
@@ -70,7 +70,8 @@ export default async function Home() {
   const mapCountries = countryList.map((c) => ({
     iso: c.iso_code.toUpperCase(),
     name: c.name,
-    level: latestLevel.get(c.id) ?? null,
+    level: latestLevel.get(c.id)?.overall_level ?? null,
+    coreDocs: latestLevel.get(c.id)?.completeness ?? null,
     docs: counts[c.id] || 0,
   }));
 

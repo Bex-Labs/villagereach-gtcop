@@ -1,3 +1,3 @@
 country_code,round,assessed_on,provisional,typology,completeness,score_low,score_high,commentary,evidence_label,confidence,instruments_total,instruments_binding,instruments_scored,instruments_excluded,observed_activity,1,2,3,4,5a,5b,6a,6b,7a,7b,8a,8b,9,10,11
-NG,Round 1 - 2026,2026-10-15,yes,Mixed profile,3,,,,Low,Low,6,1,6,0,Not determined,2,2,2,2,3,3,3,2,2,2,2,2,2,2,2
-KE,Round 1 - 2026,,yes,Implementation-oriented,2,,,,Low,Low,2,1,2,0,Not determined,3,3,3,3,3,3,3,3,3,2,3,2,3,3,1
+NG,2026 Assessment,2026-10-15,yes,Mixed profile,3,,,,Low,Low,6,1,6,0,Not determined,2,2,2,2,3,3,3,2,2,2,2,2,2,2,2
+KE,2026 Assessment,,yes,Implementation-oriented,2,,,,Low,Low,2,1,2,0,Not determined,3,3,3,3,3,3,3,3,3,2,3,2,3,3,1

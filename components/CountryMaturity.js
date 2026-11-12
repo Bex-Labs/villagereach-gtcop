@@ -23,7 +23,7 @@ export default async function CountryMaturity({ countryId, countryCode }) {
     supabase
       .from("assessments")
       .select(
-        "id, round_label, assessed_on, updated_at, overall_score, overall_level, level_capped, score_low, score_high, ts_score, sr_score, is_provisional, typology, completeness, summary, assessment_scores(area_id, score, score_status, provisional_score), assessment_gaps(function_name, gap_type, status, sort_order)"
+        "id, round_label, assessed_on, updated_at, overall_score, overall_level, level_capped, score_low, score_high, ts_score, sr_score, is_provisional, typology, completeness, evidence_label, confidence, instruments_total, instruments_binding, observed_activity, summary, assessment_scores(area_id, score, score_status, provisional_score), assessment_gaps(function_name, gap_type, status, sort_order)"
       )
       .eq("country_id", countryId)
       .eq("status", "published")
@@ -54,9 +54,12 @@ export default async function CountryMaturity({ countryId, countryCode }) {
 
   // Strongest and weakest domains
   const domains = domainsOf(allUnits).map((d) => ({ ...d, score: calc.domainScores[d.no] })).filter((d) => d.score != null);
-  const byScore = [...domains].sort((a, b) => b.score - a.score || a.no - b.no);
-  const strongest = byScore.slice(0, 3);
-  const weakest = [...byScore].reverse().slice(0, 3);
+  // Every domain tied at the highest score, and every domain tied at the lowest (as VillageReach reports them)
+  const top = domains.length ? Math.max(...domains.map((d) => d.score)) : null;
+  const bottom = domains.length ? Math.min(...domains.map((d) => d.score)) : null;
+  const strongest = domains.filter((d) => d.score === top);
+  const weakest = domains.filter((d) => d.score === bottom);
+  const allSame = domains.length > 0 && top === bottom;
 
   // What the next level needs
   const next = LEVELS.find((l) => l.level === level + 1);
@@ -77,7 +80,7 @@ export default async function CountryMaturity({ countryId, countryCode }) {
           <p className="eyebrow">Regulatory assessment</p>
           <h2>Telehealth policy maturity</h2>
           <p className="muted small">
-            Assessment round {current.round_label}
+            {/round|assessment/i.test(current.round_label) ? current.round_label : `Assessment round ${current.round_label}`}
             {current.assessed_on && <> · Assessed {formatDate(current.assessed_on)}</>}
             {current.updated_at && <> · Last updated {formatDate(current.updated_at)}</>}
           </p>
@@ -107,14 +110,46 @@ export default async function CountryMaturity({ countryId, countryCode }) {
           <p className="cm-num">{fmt(n2(current.sr_score) ?? calc.srScore)}</p>
           <p className="muted small">Wider digital health environment</p>
         </div>
-        {current.completeness != null && (
+        {(current.completeness != null || current.evidence_label) && (
           <div className="cm-card">
             <p className="cm-label">Evidence completeness</p>
-            <p className="cm-num">{current.completeness} <span className="cm-of">of 8</span></p>
-            <p className="muted small">Core document types reviewed</p>
+            <p className="cm-num">
+              {current.completeness != null ? <>{current.completeness} <span className="cm-of">of 8</span></> : current.evidence_label}
+            </p>
+            <p className="muted small">
+              Core document types held by this review{current.evidence_label && current.completeness != null ? ` · ${current.evidence_label}` : ""}
+            </p>
           </div>
         )}
       </div>
+
+      {/* How firm the result is */}
+      {(current.confidence || current.instruments_total != null || current.observed_activity === "Yes") && (
+        <ul className="cm-facts">
+          {current.confidence && (
+            <li>
+              <strong>Confidence: {current.confidence}.</strong>{" "}
+              {current.confidence === "Low"
+                ? "Preliminary single-reviewer scores, not yet validated with the national focal point."
+                : "How firmly this result can be stated."}
+            </li>
+          )}
+          {current.instruments_total != null && (
+            <li>
+              <strong>{current.instruments_total} {current.instruments_total === 1 ? "instrument" : "instruments"} reviewed</strong>
+              {current.instruments_binding != null && <>, {current.instruments_binding} legally binding</>}.
+            </li>
+          )}
+          {current.observed_activity === "Yes" && (
+            <li><strong>Telehealth activity observed without a formal framework.</strong></li>
+          )}
+        </ul>
+      )}
+      {current.completeness != null && current.completeness < 8 && (
+        <p className="muted small cm-evidence-note">
+          A low count of core document types means this review did not receive those documents, not that the country lacks them.
+        </p>
+      )}
 
       {current.typology && (
         <p className="cm-typology">
@@ -152,7 +187,10 @@ export default async function CountryMaturity({ countryId, countryCode }) {
         </div>
 
         <div className="cm-side">
-          {domains.length > 0 && (
+          {allSame && (
+            <div className="cm-block"><p>All domains have the same score ({domainText(top)}).</p></div>
+          )}
+          {domains.length > 0 && !allSame && (
             <div className="cm-block cm-two">
               <div>
                 <h3>Strongest domains</h3>

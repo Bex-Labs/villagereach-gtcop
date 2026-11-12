@@ -22,8 +22,16 @@ function BulkButton({ status, children, primary }) {
 // rows: [{ id, country, round, score, level, levelName, capped, filled, isLive, provisional, imported, updated, by }]
 export default function ResultsTable({ rows, unitCount }) {
   const [picked, setPicked] = useState(() => new Set());
-  const allPicked = rows.length > 0 && picked.size === rows.length;
-  const somePicked = picked.size > 0 && !allPicked;
+  const [search, setSearch] = useState("");
+
+  // Search by country (or round); ignores capitals and accents, so "cote" finds Côte d'Ivoire
+  const plain = (t) => String(t ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const q = plain(search.trim());
+  const shown = q ? rows.filter((r) => plain(r.country).includes(q) || plain(r.round).includes(q)) : rows;
+  const hiddenPicked = [...picked].filter((id) => !shown.some((r) => r.id === id)).length;
+
+  const allPicked = shown.length > 0 && shown.every((r) => picked.has(r.id));
+  const somePicked = !allPicked && shown.some((r) => picked.has(r.id));
 
   const toggle = (id) =>
     setPicked((now) => {
@@ -31,19 +39,48 @@ export default function ResultsTable({ rows, unitCount }) {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-  const pickAll = () => setPicked(allPicked ? new Set() : new Set(rows.map((r) => r.id)));
-  const pickWhere = (test) => setPicked(new Set(rows.filter(test).map((r) => r.id)));
+  // The header box and quick-select links work on the rows you can see
+  const pickAll = () =>
+    setPicked((now) => {
+      const next = new Set(now);
+      shown.forEach((r) => (allPicked ? next.delete(r.id) : next.add(r.id)));
+      return next;
+    });
+  const pickWhere = (test) => setPicked(new Set(shown.filter(test).map((r) => r.id)));
 
   const chosen = rows.filter((r) => picked.has(r.id));
   const incomplete = chosen.filter((r) => !r.isLive && r.filled < unitCount).length;
 
   return (
     <div className="card results-card">
+      {/* Search */}
+      <div className="results-search">
+        <label htmlFor="results-search">Search</label>
+        <input
+          id="results-search"
+          type="search"
+          placeholder="Type a country, e.g. Kenya"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          autoComplete="off"
+        />
+        <p className="muted small" aria-live="polite">
+          {q ? `${shown.length} of ${rows.length} results` : `${rows.length} results`}
+        </p>
+      </div>
+
       {/* Bulk actions */}
       <form action={setManyStatuses} className={`bulk-bar ${picked.size ? "is-active" : ""}`} aria-label="Selected results">
         <input type="hidden" name="ids" value={[...picked].join(",")} />
         <p className="bulk-count" aria-live="polite">
-          {picked.size ? <><strong>{picked.size}</strong> selected</> : "Tick results to publish or unpublish several at once."}
+          {picked.size ? (
+            <>
+              <strong>{picked.size}</strong> selected
+              {hiddenPicked > 0 && <span className="muted small"> ({hiddenPicked} not shown by this search)</span>}
+            </>
+          ) : (
+            "Tick results to publish or unpublish several at once."
+          )}
         </p>
         <div className="bulk-quick">
           <span className="muted small">Quick select:</span>
@@ -83,7 +120,10 @@ export default function ResultsTable({ rows, unitCount }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {shown.length === 0 && (
+              <tr><td colSpan={9} className="muted">No results match &ldquo;{search}&rdquo;.</td></tr>
+            )}
+            {shown.map((r) => (
               <tr key={r.id} className={picked.has(r.id) ? "is-picked" : ""}>
                 <td className="pick-col">
                   <input

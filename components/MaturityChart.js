@@ -53,16 +53,23 @@ export default function MaturityChart({ rows, levels, groupByRegion = false }) {
                   <span className="visually-hidden">
                     {r.name}:{" "}
                     {r.score != null
-                      ? `score ${r.score.toFixed(2)}${r.low != null && r.high != null ? `, range ${r.low.toFixed(2)} to ${r.high.toFixed(2)}` : ""}, Level ${r.level} ${levels[r.level] ?? ""}`
+                      ? `score ${r.score.toFixed(2)}${r.low != null && r.high != null ? `, range ${r.low.toFixed(2)} to ${r.high.toFixed(2)}` : ""}, Level ${r.level} ${levels[r.level] ?? ""}${r.docs != null ? `, ${r.docs} of 8 core document types` : ""}`
                       : "not scored"}
                   </span>
                 </div>
                 <span className="mchart-value">
                   {r.score != null ? (
                     <>
-                      <strong>{r.score.toFixed(2)}</strong> Level {r.level} · {levels[r.level]}
-                      {r.capped && <span className="mchart-flag">Held by a minimum condition</span>}
-                      {r.borderline && <span className="mchart-flag">Borderline</span>}
+                      <span className="mchart-main">
+                        <strong>{r.score.toFixed(2)}</strong> Level {r.level} · {levels[r.level]}
+                      </span>
+                      {(r.docs != null || r.capped || r.borderline) && (
+                        <span className="mchart-sub">
+                          {r.docs != null && <span className="mchart-docs">{r.docs} of 8 core document types</span>}
+                          {r.capped && <span className="mchart-flag">Held by a minimum condition</span>}
+                          {r.borderline && <span className="mchart-flag">Borderline</span>}
+                        </span>
+                      )}
                     </>
                   ) : (
                     "Not scored"

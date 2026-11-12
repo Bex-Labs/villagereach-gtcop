@@ -93,6 +93,7 @@ export default function CompareCountries({ rows, domains, initial = [] }) {
               <li key={r.code}>
                 <span className="gchart-swatch" style={{ background: colourOf(r.code) }} aria-hidden="true" />
                 {r.name}
+                {r.docs != null && <span className="muted small"> · {r.docs} of 8 core document types</span>}
               </li>
             ))}
           </ul>
@@ -137,7 +138,8 @@ export default function CompareCountries({ rows, domains, initial = [] }) {
           </div>
 
           <figcaption className="muted small cmp-caption">
-            Each country keeps its colour in every group. Scores 0–4; a domain with two parts shows their average.{" "}
+            Each country keeps its colour in every group. Scores 0–4; a domain with two parts shows their average.
+            Scores describe the policy and regulatory environment, not whether telehealth is operating or improving outcomes.{" "}
             <button type="button" className="link-button" onClick={copyLink}>
               {copied ? "Link copied ✓" : "Copy link to this comparison"}
             </button>

@@ -42,19 +42,14 @@ export default async function ImportPage({ searchParams }) {
         <h2>Templates</h2>
         <p>Fill in a copy in Excel or Google Sheets and save it as <strong>CSV</strong>.</p>
         <ul className="import-templates">
-          <li><a href="/templates/results-template.csv" download>Results template</a> (2 example rows)</li>
+          <li><a href="/templates/results-template.csv" download>Results template</a> (2 example rows, made up: replace them with real ones)</li>
           <li><a href="/templates/gaps-template.csv" download>Gaps template</a> (3 example rows)</li>
-          <li>
-            <a href="/templates/simulation-results.csv" download>Simulation results</a> and{" "}
-            <a href="/templates/simulation-gaps.csv" download>simulation gaps</a>: 23 round-1 countries with
-            made-up scores in round <strong>SIM</strong>, for testing and demos. Not real data.
-          </li>
         </ul>
         <details className="import-help">
           <summary>How to fill in the files</summary>
           <ul>
             <li><strong>country_code</strong>: the two-letter code, e.g. NG, KE.</li>
-            <li><strong>round</strong>: e.g. Round 1 - 2026. Use SIM for practice data, so it never mixes with real results.</li>
+            <li><strong>round</strong>: e.g. 2026 Assessment. For practice data use a round like TEST, so it never mixes with real results.</li>
             <li><strong>Parts 1 to 11</strong>: 0–4, <strong>NE</strong> (not evaluable), <strong>P</strong> or <strong>P3</strong> (provisional, with its score). Leave blank if not scored yet.</li>
             <li><strong>assessed_on</strong>: 2026-09-12 or 12/09/2026. <strong>provisional</strong>: yes or no (blank means yes).</li>
             <li><strong>typology</strong>: one of the seven typologies, spelled as on the form. <strong>completeness</strong>: 0–8.</li>

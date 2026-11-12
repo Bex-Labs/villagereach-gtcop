@@ -1852,3 +1852,18 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 /* Admin form: evidence and confidence (VR round 1) */
 .edit-subhead { margin: 20px 0 4px; font-size: 18px; color: var(--rust); }
 .edit-subhead + p { margin-top: 0; }
+
+/* VillageReach round 1: evidence and confidence on public pages */
+.mchart-main { flex-basis: 100%; }
+.mchart-sub { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.mchart-docs { font-size: 13px; color: #4E636B; font-weight: 400; }
+.mchart-value { row-gap: 2px; }
+.cm-facts { list-style: none; margin: 0; padding: 14px 18px; background: #FBEFC9; color: #4A3A00; display: flex; flex-direction: column; gap: 6px; }
+.cm-evidence-note { margin: -8px 0 0; }
+.amap-measure { margin: 8px 0; }
+
+/* Results list: search */
+.results-search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 16px 0 4px; }
+.results-search label { font-weight: 700; margin: 0; }
+.results-search input { flex: 1 1 260px; max-width: 420px; }
+.results-search p { margin: 0; }
