@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { AFRICAN_COUNTRIES } from "@/lib/africa";
 import { MAP_WIDTH, MAP_HEIGHT, LABEL_OFFSETS, ISLANDS, SHAPES } from "@/lib/africa-shapes";
-import { coverageOf, COVERAGE_TEXT, COVERAGE_ROUND } from "@/lib/coverage";
+import { coverageOf, COVERAGE_TEXT } from "@/lib/coverage";
 
 // Map of Africa with two views:
 //  • Assessment coverage: which countries were assessed in round 1 (the default)
@@ -154,23 +154,20 @@ export default function AfricaMap({ countries, levels }) {
           <div className="amap-box" aria-live="polite">
             <p className="eyebrow">Selected country</p>
             <h3 className="amap-name">{nameOf(selected)}</h3>
-            <p className="amap-status">
-              <span className={`amap-dot ${classOf(selected)}`} aria-hidden="true" />
-              {statusOf(selected)}
-            </p>
+            {view === "level" && (
+              <p className="amap-status">
+                <span className={`amap-dot ${classOf(selected)}`} aria-hidden="true" />
+                {statusOf(selected)}
+              </p>
+            )}
             {view === "coverage" && <p className="muted">{COVERAGE_TEXT[coverageOf(selected)].detail}</p>}
             {view === "level" && sel?.level && sel.coreDocs != null && (
               <p className="muted small">Evidence: {sel.coreDocs} of 8 core document types</p>
             )}
             {sel && (
-              <>
-                <p className="muted small">
-                  {sel.docs} published {sel.docs === 1 ? "document" : "documents"} on this site
-                </p>
-                <Link href={`/countries/${selected.toLowerCase()}`} className="arrow-link">
-                  View country page →
-                </Link>
-              </>
+              <Link href={`/countries/${selected.toLowerCase()}`} className="arrow-link">
+                View country page →
+              </Link>
             )}
           </div>
 
@@ -178,7 +175,7 @@ export default function AfricaMap({ countries, levels }) {
           <div className="amap-box">
             {view === "coverage" ? (
               <>
-                <p className="eyebrow">{COVERAGE_ROUND} coverage</p>
+                <p className="eyebrow">Map guidelines</p>
                 <ul className="amap-legend">
                   {["assessed", "shared", "none"].map((k) => (
                     <li key={k}>
@@ -243,11 +240,6 @@ function MapTip({ tip, view, country, name, levels }) {
             {COVERAGE_TEXT[cov].status}
           </p>
           {cov === "assessed" && <p className="amap-tip-sub">Results provisional, under government review</p>}
-          {country && (
-            <p className="amap-tip-sub">
-              {country.docs} published {country.docs === 1 ? "document" : "documents"} on this site
-            </p>
-          )}
         </>
       ) : country?.level ? (
         <>

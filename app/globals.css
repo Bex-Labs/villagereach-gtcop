@@ -1885,3 +1885,6 @@ h2.display { font-size: clamp(28px, 3vw, 38px); margin: 4px 0 24px; }
 .amap-tip-hint { color: #A9D0DA; font-size: 12px; margin: 6px 0 0 !important; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
 .amap-country:hover .amap-shape, .amap-country:focus-visible .amap-shape { stroke: #B79443; stroke-width: 2.5; }
 @media (hover: none) { .amap-tip { display: none; } }
+
+/* Home: "View all countries" right under the 6 country cards */
+.band-link-tight { margin-top: 16px; }

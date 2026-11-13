@@ -4,7 +4,7 @@ import { getContent } from "@/lib/content";
 import { SECTIONS } from "@/lib/study";
 import IconDisc from "@/components/IconDisc";
 import AfricaMap from "@/components/AfricaMap";
-import { ROUND1_ASSESSED, COVERAGE_ROUND } from "@/lib/coverage";
+import { ROUND1_ASSESSED } from "@/lib/coverage";
 
 // Brand headline style: light text with the key words in bold.
 // Bold = everything after the last comma (or the last two words if there is no comma).
@@ -67,6 +67,11 @@ export default async function Home() {
   });
   // For the map: each visible country with its latest level and number of documents
   const levelName = Object.fromEntries((levels ?? []).map((l) => [l.level, l.name]));
+  // Home page shows 6 countries: those with the most documents first, then A–Z
+  const homeCountries = [...countryList]
+    .sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0) || a.name.localeCompare(b.name))
+    .slice(0, 6);
+
   const mapCountries = countryList.map((c) => ({
     iso: c.iso_code.toUpperCase(),
     name: c.name,
@@ -106,7 +111,6 @@ export default async function Home() {
       {/* Map: round 1 coverage, or published maturity levels */}
       <section className="band">
         <div className="container">
-          <p className="eyebrow">Continental assessment · {COVERAGE_ROUND}</p>
           <h2 className="display"><strong>{ROUND1_ASSESSED.length}</strong> African Union member states assessed</h2>
 
           <p className="band-intro">
@@ -119,14 +123,13 @@ export default async function Home() {
       {/* Countries */}
       <section className="band band-alt">
         <div className="container">
-          <p className="eyebrow">Country repositories</p>
           <h2 className="display"><strong>Countries</strong></h2>
 
-          {countryList.length === 0 ? (
+          {homeCountries.length === 0 ? (
             <p className="muted">Countries will appear here soon.</p>
           ) : (
             <div className="country-grid">
-              {countryList.map((c) => (
+              {homeCountries.map((c) => (
                 <Link key={c.id} href={`/countries/${c.iso_code.toLowerCase()}`} className="card country-card">
                   <span className="iso-badge" aria-hidden="true">{c.iso_code}</span>
                   <span>
@@ -141,7 +144,7 @@ export default async function Home() {
             </div>
           )}
 
-          <p className="band-link">
+          <p className="band-link band-link-tight">
             <Link href="/countries" className="arrow-link">View all countries →</Link>
           </p>
         </div>
